@@ -1,0 +1,23 @@
+{
+  "version": 2,
+  "builds": [
+    { "src": "api/**/*.js", "use": "@vercel/node" }
+  ],
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/webhook/(.*)", "dest": "/api/webhook/$1" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ],
+  "functions": {
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/monthly-billing",
+      "schedule": "0 2 1 * *"
+    }
+  ]
+}

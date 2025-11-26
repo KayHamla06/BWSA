@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Join WhatsApp PayShap SaaS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <h2>Bubble WhatsApp PayShap API</h2>
+    <p>This API allows small businesses to be paid by their customers directly on WhatsApp.</p>
+
+    <h1>Get Your API Key</h1>
+    <form id="signup">
+      <input type="text" placeholder="Business Name" required>
+      <input type="email" placeholder="Email" required>
+      <input type="tel" placeholder="Your phone (for billing)" required>
+      <select name="plan">
+        <option value="payperuse">Pay-per-use (R7 per text)</option>
+        <option value="basic">Basic – R99/mo</option>
+        <option value="pro">Pro – R299/mo</option>
+      </select>
+      <button type="submit">Create Account →</button>
+    </form>
+
+    <!-- Pricing Table -->
+    <table>
+      <tr>
+        <th>Plan</th>
+        <th>Price</th>
+        <th>Messages</th>
+      </tr>
+      <tr>
+        <td>Pay-per-use</td>
+        <td>R7 per text</td>
+        <td>1 message</td>
+      <tr>
+        <td>Basic</td>
+        <td>R99/mo</td>
+        <td>100 messages</td>
+      </tr>
+      <tr>
+        <td>Pro</td>
+        <td>R299/mo</td>
+        <td>Unlimited</td>
+      </tr>
+    </table>
+  </div>
+
+  <script>
+    document.getElementById('signup').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      const data = Object.fromEntries(formData);
+      const res = await fetch('/api/billing/signup', { 
+        method: 'POST', 
+        body: JSON.stringify(data), 
+        headers: {'Content-Type': 'application/json'} 
+      });
+      const json = await res.json();
+      if (json.success) alert('API Key: ' + json.apiKey);
+    });
+  </script>
+</body>
+</html>
