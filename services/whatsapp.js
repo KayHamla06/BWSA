@@ -1,45 +1,83 @@
 import axios from 'axios';
 
-const WHATSAPP_API_URL = 'https://graph.instagram.com/v18.0';
-const PHONE_NUMBER_ID = process.env.WHATSAPP_PHONE_NUMBER_ID;
-const ACCESS_TOKEN = process.env.WHATSAPP_API_TOKEN;
+function getWhatsAppConfig() {
+  return {
+    phoneId: process.env.WHATSAPP_PHONE_ID || process.env.WHATSAPP_PHONE_NUMBER_ID,
+    token: process.env.WHATSAPP_TOKEN || process.env.WHATSAPP_API_TOKEN,
+    version: process.env.WHATSAPP_API_VERSION || 'v20.0',
+  };
+}
 
-export async function sendWhatsAppMessage(phoneNumber, message, mediaUrl = null) {
-  try {
-    const url = `${WHATSAPP_API_URL}/${PHONE_NUMBER_ID}/messages`;
+function isConfigured() {
+  const { phoneId, token } = getWhatsAppConfig();
+  return Boolean(phoneId && token);
+}
 
-    const payload = {
-      messaging_product: 'whatsapp',
-      to: phoneNumber.replace(/\D/g, ''),
-      type: mediaUrl ? 'document' : 'text',
+async function sendTextMessage(toPhone, body) {
+  const config = getWhatsAppConfig();
+
+  if (!isConfigured()) {
+    return {
+      success: false,
+      skipped: true,
+      message: 'WhatsApp integration not configured. Add WHATSAPP_PHONE_ID and WHATSAPP_TOKEN.',
     };
+  }
 
-    if (mediaUrl) {
-      payload.document = { link: mediaUrl };
-    } else {
-      payload.text = { body: message };
-    }
+  const to = String(toPhone || '').replace(/^\+/, '');
 
-    const response = await axios.post(url, payload, {
+  await axios.post(
+    `https://graph.facebook.com/${config.version}/${config.phoneId}/messages`,
+    {
+      messaging_product: 'whatsapp',
+      to,
+      type: 'text',
+      text: { body },
+    },
+    {
       headers: {
-        Authorization: `Bearer ${ACCESS_TOKEN}`,
+        Authorization: `Bearer ${config.token}`,
         'Content-Type': 'application/json',
       },
-    });
+    }
+  );
 
-    return { success: true, messageId: response.data.messages[0].id };
+  return { success: true };
+}
+
+async function sendPaymentLink(toPhone, paymentLink, customerName = 'Customer') {
+  try {
+    return await sendTextMessage(
+      toPhone,
+      `Hi ${customerName}, here is your payment link:\n${paymentLink}\n\nPlease complete your payment securely.`
+    );
   } catch (error) {
-    console.error('WhatsApp API Error:', error.response?.data || error.message);
-    return { success: false, error: error.response?.data?.error?.message || error.message };
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message || 'Failed to send payment link',
+    };
   }
 }
 
-export async function sendPaymentLink(phoneNumber, paymentLink, customerName) {
-  const message = `Hi ${customerName},\n\nYou have a payment request. Please click the link below to complete your payment:\n\n${paymentLink}\n\nThank you!`;
-  return sendWhatsAppMessage(phoneNumber, message);
+async function sendPaymentConfirmation(toPhone, amount, reference) {
+  try {
+    return await sendTextMessage(
+      toPhone,
+      `✅ Payment successful!\nAmount: R${amount}\nReference: ${reference}\n\nThank you for your payment.`
+    );
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error?.message || error.message || 'Failed to send confirmation',
+    };
+  }
 }
 
-export async function sendPaymentConfirmation(phoneNumber, amount, transactionId) {
-  const message = `Thank you for your payment!\n\nAmount: R${amount}\nTransaction ID: ${transactionId}\n\nYour payment has been confirmed.`;
-  return sendWhatsAppMessage(phoneNumber, message);
-}
+export const whatsappService = {
+  isConfigured,
+  sendTextMessage,
+  sendPaymentLink,
+  sendInvoice: sendPaymentLink, // alias for compatibility
+  sendPaymentConfirmation,
+  getWhatsAppConfig,
+};

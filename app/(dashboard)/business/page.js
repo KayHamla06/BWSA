@@ -4,6 +4,7 @@ import { useFetch } from '@/hooks/useFetch';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Building2 } from 'lucide-react';
+import ServiceStatus from '@/components/ServiceStatus';
 
 export default function BusinessPage() {
   const { data, loading } = useFetch('/api/business');
@@ -119,6 +120,8 @@ export default function BusinessPage() {
           </button>
         </form>
       </div>
+
+      <ServiceStatus />
     </div>
   );
 }

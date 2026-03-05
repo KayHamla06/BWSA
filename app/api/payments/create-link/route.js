@@ -4,8 +4,8 @@ import Payment from '@/models/Payment';
 import Customer from '@/models/Customer';
 import User from '@/models/User';
 import { validateAmount } from '@/lib/validators';
-import { sendPaymentLink } from '@/services/whatsapp';
-import { createPaymentRequest } from '@/services/ozow';
+import { whatsappService } from '@/services/whatsapp';
+import { ozowService } from '@/services/ozow';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -64,7 +64,7 @@ export async function POST(request) {
     }
 
     // Create payment request with Ozow
-    const paymentRequestResult = await createPaymentRequest(
+    const paymentRequestResult = await ozowService.createPaymentRequest(
       amount,
       `PAY-${Date.now()}`,
       `${process.env.APP_URL}/payment-success`,
@@ -79,7 +79,11 @@ export async function POST(request) {
 
     if (!paymentRequestResult.success) {
       return NextResponse.json(
-        { error: 'Failed to create payment request' },
+        { 
+          error: paymentRequestResult.error || 'Failed to create payment request',
+          unavailableServices: !ozowService.isConfigured() ? ['ozow'] : [],
+          message: 'Payment service not available. Please ensure API keys are configured.',
+        },
         { status: 400 }
       );
     }
@@ -100,8 +104,9 @@ export async function POST(request) {
     });
 
     // Send payment link via WhatsApp if enabled
+    let whatsappResult = { success: true };
     if (sendViaWhatsApp) {
-      await sendPaymentLink(
+      whatsappResult = await whatsappService.sendPaymentLink(
         customerPhone,
         paymentRequestResult.data.redirectUrl || payment.paymentLinkId,
         customerName
@@ -119,6 +124,17 @@ export async function POST(request) {
         status: payment.status,
         createdAt: payment.createdAt,
       },
+      serviceStatus: {
+        ozow: {
+          available: ozowService.isConfigured(),
+          status: 'Payment processing ready'
+        },
+        whatsapp: {
+          available: whatsappService.isConfigured(),
+          messageSent: whatsappResult.success || false,
+          status: !whatsappService.isConfigured() ? 'Not configured - message not sent' : 'Message sent'
+        }
+      }
     });
   } catch (error) {
     console.error('Create payment link error:', error);

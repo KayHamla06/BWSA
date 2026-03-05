@@ -1,8 +1,8 @@
 import { connectDB } from '@/lib/db';
-import { verifyOzowWebhook } from '@/services/ozow';
+import { ozowService } from '@/services/ozow';
+import { whatsappService } from '@/services/whatsapp';
 import Payment from '@/models/Payment';
 import Customer from '@/models/Customer';
-import { sendPaymentConfirmation } from '@/services/whatsapp';
 import { NextResponse } from 'next/server';
 
 export async function POST(request) {
@@ -13,7 +13,7 @@ export async function POST(request) {
     const signature = request.headers.get('X-Signature');
 
     // Verify webhook signature
-    if (!verifyOzowWebhook(body, signature)) {
+    if (!ozowService.verifyOzowWebhook(body, signature)) {
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
@@ -45,7 +45,7 @@ export async function POST(request) {
       await customer.save();
 
       // Send WhatsApp confirmation
-      await sendPaymentConfirmation(
+      await whatsappService.sendPaymentConfirmation(
         customer.whatsappNumber,
         payment.amount,
         transactionId

@@ -1,69 +1,124 @@
-
-
-
-
-import axios from 'axios';
 import crypto from 'crypto';
 
-const OZOW_API_URL = 'https://api.ozow.com';
-const OZOW_API_KEY = process.env.OZOW_API_KEY;
-const OZOW_PRIVATE_KEY = process.env.OZOW_PRIVATE_KEY;
+function getOzowConfig() {
+  return {
+    siteCode: process.env.OZOW_SITE_CODE || process.env.OZOW_SITE_CODE_LIVE,
+    privateKey: process.env.OZOW_PRIVATE_KEY,
+    baseUrl: process.env.OZOW_BASE_URL || 'https://pay.ozow.com',
+    isTest: process.env.OZOW_IS_TEST === 'true',
+    appUrl: process.env.APP_URL || 'http://localhost:3000',
+  };
+}
 
-function generateSignature(data) {
+function isConfigured() {
+  const { siteCode, privateKey } = getOzowConfig();
+  return Boolean(siteCode && privateKey);
+}
+
+function generateHash(fields, privateKey) {
+  const value = fields.join('').toLowerCase();
   return crypto
-    .createHmac('sha512', OZOW_PRIVATE_KEY)
-    .update(JSON.stringify(data))
-    .digest('hex');
+    .createHash('sha512')
+    .update(value + privateKey)
+    .digest('hex')
+    .toLowerCase();
 }
 
-export async function createPaymentRequest(amount, reference, successUrl, failUrl, cancelUrl, metadata = {}) {
+async function createPaymentRequest(
+  amount,
+  reference,
+  successUrl,
+  errorUrl,
+  cancelUrl,
+  customer = {}
+) {
   try {
-    const payload = {
-      amount: Math.round(amount * 100), // Convert to cents
-      reference: reference,
-      currency: 'ZAR',
-      successUrl: successUrl,
-      failUrl: failUrl,
-      cancelUrl: cancelUrl,
-      customerFirstName: metadata.customerName || 'Customer',
-      customerEmail: metadata.customerEmail || '',
-      customerPhone: metadata.phoneNumber || '',
-      isTest: process.env.NODE_ENV === 'development',
+    const config = getOzowConfig();
+
+    if (!isConfigured()) {
+      return {
+        success: false,
+        error: 'Ozow integration is not configured yet. Add OZOW_SITE_CODE and OZOW_PRIVATE_KEY in .env.local.',
+      };
+    }
+
+    const parsedAmount = Number(amount);
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      return { success: false, error: 'Invalid payment amount' };
+    }
+
+    const amountInCents = Math.round(parsedAmount * 100).toString();
+    const notifyUrl = `${config.appUrl}/api/webhooks/ozow`;
+
+    const fields = [
+      config.siteCode,
+      'ZA',
+      'ZAR',
+      amountInCents,
+      reference,
+      `Payment ${reference}`,
+      cancelUrl,
+      errorUrl,
+      successUrl,
+      notifyUrl,
+      config.isTest ? 'true' : 'false',
+    ];
+
+    const hash = generateHash(fields, config.privateKey);
+
+    const params = new URLSearchParams({
+      SiteCode: config.siteCode,
+      CountryCode: 'ZA',
+      CurrencyCode: 'ZAR',
+      Amount: amountInCents,
+      TransactionReference: reference,
+      BankReference: `Payment ${reference}`,
+      CancelUrl: cancelUrl,
+      ErrorUrl: errorUrl,
+      SuccessUrl: successUrl,
+      NotifyUrl: notifyUrl,
+      IsTest: config.isTest ? 'true' : 'false',
+      HashCheck: hash,
+      ...(customer.customerName && { Customer: customer.customerName }),
+      ...(customer.customerEmail && { Optional1: customer.customerEmail }),
+      ...(customer.phoneNumber && { Optional2: customer.phoneNumber }),
+    });
+
+    return {
+      success: true,
+      data: {
+        redirectUrl: `${config.baseUrl}/PostPaymentRequest?${params.toString()}`,
+        reference,
+      },
     };
-
-    const signature = generateSignature(payload);
-
-    const response = await axios.post(`${OZOW_API_URL}/payments/create`, payload, {
-      headers: {
-        Authorization: `Bearer ${OZOW_API_KEY}`,
-        'X-Signature': signature,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    return { success: true, data: response.data };
   } catch (error) {
-    console.error('Ozow API Error:', error.response?.data || error.message);
-    return { success: false, error: error.response?.data?.message || error.message };
+    return {
+      success: false,
+      error: error.message || 'Failed to create payment request',
+    };
   }
 }
 
-export async function getPaymentStatus(transactionId) {
-  try {
-    const response = await axios.get(`${OZOW_API_URL}/payments/${transactionId}`, {
-      headers: {
-        Authorization: `Bearer ${OZOW_API_KEY}`,
-      },
-    });
+function verifyOzowWebhook(body, signature) {
+  const { privateKey } = getOzowConfig();
 
-    return { success: true, data: response.data };
-  } catch (error) {
-    console.error('Ozow API Error:', error.response?.data || error.message);
-    return { success: false, error: error.response?.data?.message || error.message };
-  }
+  if (!privateKey || !signature) return false;
+
+  const data = { ...body };
+  delete data.HashCheck;
+
+  const fields = Object.keys(data)
+    .sort()
+    .map((key) => data[key]);
+
+  const expectedHash = generateHash(fields, privateKey);
+  return expectedHash === String(signature).toLowerCase();
 }
 
-export function verifyOzowWebhook(payload, signature) {
-  const expectedSignature = generateSignature(payload);
-  return signature === expectedSignature;
-}
+export const ozowService = {
+  isConfigured,
+  createPaymentRequest,
+  verifyOzowWebhook,
+  generateHash,
+  getOzowConfig,
+};

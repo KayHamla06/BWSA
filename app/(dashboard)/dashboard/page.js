@@ -3,6 +3,7 @@
 import { useFetch } from '@/hooks/useFetch';
 import DashboardCard from '@/components/DashboardCard';
 import PaymentTable from '@/components/PaymentTable';
+import ServiceStatus from '@/components/ServiceStatus';
 import { BarChart3, CreditCard, Users, TrendingUp } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -44,6 +45,8 @@ export default function DashboardPage() {
           color="orange"
         />
       </div>
+
+      <ServiceStatus />
 
       <div className="glass rounded-xl p-6 card-shadow">
         <h2 className="text-xl font-bold mb-4">Recent Payments</h2>
