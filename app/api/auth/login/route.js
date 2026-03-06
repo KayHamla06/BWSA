@@ -11,26 +11,38 @@ export async function POST(request) {
     const { email, password } = await request.json();
 
     // Validation
-    if (!validateEmail(email)) {
-      return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
+    if (!email || !validateEmail(email)) {
+      return NextResponse.json(
+        { success: false, errorType: 'USER_ERROR', message: 'Please enter a valid email address', where: 'client_input' },
+        { status: 400 }
+      );
     }
 
     if (!password) {
-      return NextResponse.json({ error: 'Password required' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, errorType: 'USER_ERROR', message: 'Please enter your password', where: 'client_input' },
+        { status: 400 }
+      );
     }
 
     // Find user
     const user = await User.findOne({ email: email.toLowerCase() });
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, errorType: 'AUTH_ERROR', message: 'Invalid email or password', where: 'client_input' },
+        { status: 401 }
+      );
     }
 
     // Check password
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      return NextResponse.json(
+        { success: false, errorType: 'AUTH_ERROR', message: 'Invalid email or password', where: 'client_input' },
+        { status: 401 }
+      );
     }
 
     // Generate token
@@ -50,6 +62,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Login error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, errorType: 'SERVER_ERROR', message: 'Something went wrong. Please try again later.', where: 'server' },
+      { status: 500 }
+    );
   }
 }

@@ -1,7 +1,7 @@
 @reference "tailwindcss";
 
 .container {
-  @apply min-h-screen flex items-center justify-center px-4 py-16;
+  @apply min-h-screen flex items-center justify-center px-4 py-8 sm:py-16;
   background: linear-gradient(135deg, #ecfdf5 0%, #dbeafe 100%);
 }
 
@@ -14,11 +14,11 @@
 }
 
 .tabs {
-  @apply flex gap-2 bg-gray-100 dark:bg-gray-800/60 p-1.5 rounded-xl mb-10 backdrop-blur-sm border border-gray-200 dark:border-gray-700;
+  @apply flex gap-2 bg-gray-100 dark:bg-gray-800/60 p-1.5 rounded-xl mb-6 sm:mb-10 backdrop-blur-sm border border-gray-200 dark:border-gray-700;
 }
 
 .tab {
-  @apply flex-1 py-3 px-6 text-center font-semibold text-sm rounded-lg transition-all duration-300;
+  @apply flex-1 py-2.5 sm:py-3 px-4 sm:px-6 text-center font-semibold text-sm rounded-lg transition-all duration-300;
 }
 
 .tabActive {
@@ -34,7 +34,7 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  @apply rounded-3xl p-10 shadow-2xl;
+  @apply rounded-3xl p-6 sm:p-10 shadow-2xl;
 }
 
 .dark .glassCard {
@@ -43,11 +43,11 @@
 }
 
 .title {
-  @apply text-4xl font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent;
+  @apply text-3xl sm:text-4xl font-bold bg-gradient-to-r from-emerald-500 to-cyan-500 bg-clip-text text-transparent;
 }
 
 .subtitle {
-  @apply text-gray-600 dark:text-gray-400 text-lg;
+  @apply text-gray-600 dark:text-gray-400 text-base sm:text-lg;
 }
 
 .inputGroup {
@@ -67,11 +67,11 @@
 }
 
 .input {
-  @apply w-full pl-12 pr-5 py-3.5 text-base rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200;
+  @apply w-full pl-12 pr-5 py-3 sm:py-3.5 text-base rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all duration-200;
 }
 
 .button {
-  @apply w-full mt-8 flex items-center justify-center gap-3 py-4 font-bold text-white text-lg rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-xl hover:shadow-2xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  @apply w-full mt-6 sm:mt-8 flex items-center justify-center gap-3 py-3 sm:py-4 font-bold text-white text-base sm:text-lg rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 shadow-xl hover:shadow-2xl hover:shadow-emerald-500/30 transform hover:-translate-y-1 transition-all duration-300 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0;
 }
 
 .spinner {

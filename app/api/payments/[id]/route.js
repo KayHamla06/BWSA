@@ -2,22 +2,14 @@ import { connectDB } from '@/lib/db';
 import { verifyToken } from '@/lib/jwt';
 import Payment from '@/models/Payment';
 import { NextResponse } from 'next/server';
+import { extractAuth, notFoundError, serverError } from '@/lib/apiError';
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const payment = await Payment.findOne({
       _id: params.id,
@@ -25,7 +17,7 @@ export async function GET(request, { params }) {
     }).populate('customerId');
 
     if (!payment) {
-      return NextResponse.json({ error: 'Payment not found' }, { status: 404 });
+      return notFoundError('Payment not found');
     }
 
     return NextResponse.json({
@@ -43,7 +35,6 @@ export async function GET(request, { params }) {
       },
     });
   } catch (error) {
-    console.error('Get payment error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Get payment error');
   }
 }

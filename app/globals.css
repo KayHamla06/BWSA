@@ -68,7 +68,7 @@ body {
 /* ────────────────────────────────────────────────
    4. Glassmorphism Base
    ──────────────────────────────────────────────── */
-.glass {
+@utility glass {
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -142,8 +142,21 @@ body {
   }
 }
 
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.7s ease-out forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.25s ease-out forwards;
 }
 
 /* ────────────────────────────────────────────────

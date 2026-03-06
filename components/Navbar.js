@@ -17,8 +17,8 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" className="font-bold text-xl gradient-text flex items-center gap-2">
-            <span className="text-2xl">🚀</span>
-            <span className="hidden sm:inline">WhatsApp PayShap</span>
+            <span className="text-2xl">🌍</span>
+            <span className="hidden sm:inline">Ubuntu Market</span>
           </Link>
 
           {/* Desktop Navigation */}

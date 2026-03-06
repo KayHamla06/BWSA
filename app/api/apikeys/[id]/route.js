@@ -2,22 +2,14 @@ import { connectDB } from '@/lib/db';
 import { verifyToken } from '@/lib/jwt';
 import ApiKey from '@/models/ApiKey';
 import { NextResponse } from 'next/server';
+import { extractAuth, notFoundError, serverError } from '@/lib/apiError';
 
 export async function GET(request, { params }) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const apiKey = await ApiKey.findOne({
       _id: params.id,
@@ -25,7 +17,7 @@ export async function GET(request, { params }) {
     });
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+      return notFoundError('API key not found');
     }
 
     return NextResponse.json({
@@ -41,8 +33,7 @@ export async function GET(request, { params }) {
       },
     });
   } catch (error) {
-    console.error('Get API key error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Get API key error');
   }
 }
 
@@ -50,17 +41,8 @@ export async function DELETE(request, { params }) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const apiKey = await ApiKey.findOneAndDelete({
       _id: params.id,
@@ -68,7 +50,7 @@ export async function DELETE(request, { params }) {
     });
 
     if (!apiKey) {
-      return NextResponse.json({ error: 'API key not found' }, { status: 404 });
+      return notFoundError('API key not found');
     }
 
     return NextResponse.json({
@@ -76,7 +58,6 @@ export async function DELETE(request, { params }) {
       message: 'API key deleted',
     });
   } catch (error) {
-    console.error('Delete API key error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Delete API key error');
   }
 }

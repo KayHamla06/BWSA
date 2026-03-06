@@ -1,5 +1,6 @@
 'use client';import { useState } from 'react';
-import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';const plans = [
+import { ArrowRight, Smartphone, Lock, BarChart3, Check, Globe } from 'lucide-react';
+import styles from './page.module.css';const plans = [
   {
     id: 'payg',
     name: 'Pay-as-you-go',
@@ -40,7 +41,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Login failed');
+      if (!res.ok) throw new Error(data?.message || data?.error || 'Login failed');
       window.location.href = '/dashboard';
     } catch (err) {
       setMessage(err.message);
@@ -60,7 +61,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
         body: JSON.stringify(form),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || 'Signup failed');
+      if (!res.ok) throw new Error(data?.message || data?.error || 'Signup failed');
       window.location.href = '/dashboard';
     } catch (err) {
       setMessage(err.message);
@@ -68,41 +69,46 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
       setLoading(false);
     }
   }  return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-r from-emerald-500 to-blue-500 dark:from-emerald-600 dark:to-blue-600">
-      <div className="flex-1 flex items-center justify-center py-20 px-4">
-        <div className="w-full max-w-7xl">
-          <div className="grid lg:grid-cols-2 gap-16 items-start">        {/* Left Side – Hero Content */}
+    <div className={styles.hero}>
+      {/* Top nav bar */}
+      <header className="w-full px-4 sm:px-8 py-4 flex justify-between items-center">
+        <div className="font-bold text-xl text-white flex items-center gap-2">
+          <Globe size={28} />
+          <span>Ubuntu Market</span>
+        </div>
+      </header>
+
+      <div className={styles.content}>
+        <div className={styles.grid}>        {/* Left Side – Hero Content */}
         <div className="space-y-16">
           <div className="space-y-6">
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent leading-tight">
-              WhatsApp Payment Links
+            <h1 className={styles.title}>
+              Ubuntu Market
             </h1>
-            <p className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed">
-              Accept payments directly through WhatsApp. No app installation needed. Get paid instantly with our secure payment gateway.
+            <p className={styles.subtitle}>
+              Accept payments directly through WhatsApp. No app installation needed. Get paid instantly with our secure payment gateway powered by Ozow & PayShap.
             </p>
           </div>
 
           {/* Pricing */}
           <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Simple Pricing</h2>
-            <div className="grid md:grid-cols-3 gap-4">
+            <h2 className="text-3xl font-bold text-white">Simple Pricing</h2>
+            <div className={styles.pricingGrid}>
               {plans.map((plan) => (
                 <button
                   key={plan.id}
                   onClick={() => setSelectedPlan(plan.id)}
-                  className={`relative p-6 rounded-2xl h-full transition-all duration-300 border border-transparent hover:ring-2 hover:ring-emerald-500 hover:scale-105 ${
-                    plan.popular ? 'bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-emerald-900/30 dark:to-blue-900/30' : ''
-                  } ${selectedPlan === plan.id ? 'ring-2 ring-emerald-500 scale-105' : ''}`}
+                  className={`${styles.pricingCard} ${selectedPlan === plan.id ? 'ring-2 ring-emerald-400 scale-105' : ''}`}
                 >
                   {plan.popular && (
-                    <span className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white text-xs font-bold px-4 py-1 rounded-full">
+                    <span className={styles.popularBadge}>
                       MOST POPULAR
                     </span>
                   )}
                   <div className="pt-2 text-left">
                     <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2">{plan.name}</h3>
                     <div className="mb-3">
-                      <span className="text-4xl font-bold bg-gradient-to-r from-emerald-500 to-blue-500 bg-clip-text text-transparent">{plan.price}</span>
+                      <span className={styles.price}>{plan.price}</span>
                       {plan.period && <span className="text-gray-600 dark:text-gray-400 ml-2">/{plan.period}</span>}
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">{plan.description}</p>
@@ -115,7 +121,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       ))}
                     </ul>
                     {selectedPlan === plan.id && (
-                      <div className="inline-block bg-emerald-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      <div className={styles.selectedBadge}>
                         ✓ Selected
                       </div>
                     )}
@@ -127,19 +133,19 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
 
           {/* Features */}
           <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Why Choose Us</h3>
-            <div className="grid sm:grid-cols-3 gap-4">
-              <div className="rounded-xl p-4 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-white/20 transition-transform hover:-translate-y-1">
+            <h3 className="text-xl font-bold text-white">Why Choose Us</h3>
+            <div className={styles.featureGrid}>
+              <div className={styles.featureCard}>
                 <Smartphone className="w-8 h-8 mx-auto text-emerald-500 mb-3" />
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Instant Setup</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Start accepting payments in minutes</p>
               </div>
-              <div className="rounded-xl p-4 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-white/20 transition-transform hover:-translate-y-1">
+              <div className={styles.featureCard}>
                 <Lock className="w-8 h-8 mx-auto text-emerald-500 mb-3" />
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Secure & Safe</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">PCI compliant with Ozow & PayShap</p>
               </div>
-              <div className="rounded-xl p-4 text-center bg-white/80 dark:bg-gray-800/80 backdrop-blur-md border border-white/20 transition-transform hover:-translate-y-1">
+              <div className={styles.featureCard}>
                 <BarChart3 className="w-8 h-8 mx-auto text-emerald-500 mb-3" />
                 <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Real Analytics</h4>
                 <p className="text-sm text-gray-600 dark:text-gray-400">Track payments and revenue</p>
@@ -149,34 +155,25 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
         </div>
 
         {/* Right Side – Auth Card */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
+        <div className={styles.authCard}>
             {/* Tabs */}
-            <div className="flex gap-2 bg-gray-100 dark:bg-gray-800 rounded-t-2xl p-1">
+            <div className={styles.authTabs}>
               <button
                 onClick={() => setTab('signin')}
-                className={`flex-1 px-6 py-3 font-semibold rounded-lg transition-all ${
-                  tab === 'signin'
-                    ? 'bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
+                className={`${styles.tab} ${tab === 'signin' ? styles.tabActive : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'}`}
               >
                 Sign In
               </button>
               <button
                 onClick={() => setTab('signup')}
-                className={`flex-1 px-6 py-3 font-semibold rounded-lg transition-all ${
-                  tab === 'signup'
-                    ? 'bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-lg'
-                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
-                }`}
+                className={`${styles.tab} ${tab === 'signup' ? styles.tabActive : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'}`}
               >
                 Sign Up
               </button>
             </div>
 
             {/* Form Card */}
-            <div className="bg-white dark:bg-gray-900 p-8 rounded-b-2xl rounded-t-none border-t-0 shadow-2xl">
+            <div className={styles.formCard}>
               {tab === 'signin' && (
                 <form onSubmit={handleLogin} className="space-y-5">
                   <div className="text-center mb-6">
@@ -191,7 +188,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="email"
                       required
                       placeholder="you@example.com"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
@@ -202,14 +199,14 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="password"
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition disabled:opacity-50"
+                    className={styles.button}
                   >
                     {loading ? 'Signing in...' : 'Sign In'}
                     {!loading && <ArrowRight size={18} />}
@@ -245,7 +242,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="text"
                       required
                       placeholder="Your Business"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
@@ -256,7 +253,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="email"
                       required
                       placeholder="you@example.com"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
@@ -267,7 +264,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="tel"
                       required
                       placeholder="+27 123 456 7890"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
@@ -278,12 +275,12 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                       type="password"
                       required
                       placeholder="••••••••"
-                      className="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-200 dark:focus:ring-emerald-900 transition"
+                      className={styles.input}
                     />
                   </div>
 
                   {/* Selected Plan Display */}
-                  <div className="bg-emerald-100 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-700 rounded-lg p-4">
+                  <div className={styles.planBox}>
                     <p className="text-sm text-emerald-900 dark:text-emerald-200">
                       <span className="font-semibold">Plan Selected:</span>{' '}
                       <span className="font-bold capitalize">
@@ -298,7 +295,7 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 font-semibold flex items-center justify-center gap-2 bg-gradient-to-r from-emerald-500 to-blue-500 text-white rounded-lg shadow-lg hover:shadow-xl transition disabled:opacity-50"
+                    className={styles.button}
                   >
                     {loading ? 'Creating Account...' : 'Create Account'}
                     {!loading && <ArrowRight size={18} />}
@@ -316,19 +313,18 @@ import { ArrowRight, Smartphone, Lock, BarChart3, Check } from 'lucide-react';co
                 </form>
               )}
             </div>
-          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  {/* CTA */}
-  <div className="w-full bg-gradient-to-r from-emerald-500 to-blue-500 dark:from-emerald-600 dark:to-blue-600 py-16 px-4">
-    <div className="max-w-3xl mx-auto text-center space-y-4">
-      <h2 className="text-3xl sm:text-4xl font-bold text-white">Ready to Get Started?</h2>
-      <p className="text-lg text-emerald-50">Join 10,000+ businesses accepting payments on WhatsApp</p>
+    {/* CTA */}
+    <div className={styles.ctaFooter}>
+      <div className="max-w-3xl mx-auto text-center space-y-4 px-4">
+        <h2 className={styles.ctaTitle}>Ready to Get Started?</h2>
+        <p className={styles.ctaSubtitle}>Join 10,000+ businesses accepting payments on WhatsApp</p>
+      </div>
     </div>
   </div>
-</div>  );
+  );
 }
 

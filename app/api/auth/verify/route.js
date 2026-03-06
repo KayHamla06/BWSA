@@ -37,6 +37,9 @@ export async function POST(request) {
     });
   } catch (error) {
     console.error('Verify error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { success: false, errorType: 'SERVER_ERROR', message: 'Something went wrong. Please try again later.', where: 'server' },
+      { status: 500 }
+    );
   }
 }

@@ -11,9 +11,9 @@ export default function PaymentsPage() {
   );
 
   return (
-    <div className="space-y-6 animate-slide-in-left">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Payments</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold">Payments</h1>
         <p className="text-gray-600 dark:text-gray-400">Manage all your payments</p>
       </div>
 
@@ -21,7 +21,7 @@ export default function PaymentsPage() {
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value)}
-          className="px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+          className="px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option value="">All Statuses</option>
           <option value="completed">Completed</option>
@@ -30,8 +30,10 @@ export default function PaymentsPage() {
         </select>
       </div>
 
-      <div className="glass rounded-xl p-6 card-shadow">
-        <PaymentTable payments={data?.payments} loading={loading} />
+      <div className="glass rounded-xl p-4 sm:p-6">
+        <div className="overflow-x-auto">
+          <PaymentTable payments={data?.payments} loading={loading} />
+        </div>
       </div>
     </div>
   );

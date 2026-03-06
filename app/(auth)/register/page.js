@@ -92,7 +92,7 @@ export default function RegisterPage() {
               Create Your Account
             </h1>
             <p className="text-lg text-gray-600 dark:text-gray-400">
-              Start accepting payments on WhatsApp in minutes
+              Start accepting payments on WhatsApp in minutes with Ubuntu Market
             </p>
           </div>
 

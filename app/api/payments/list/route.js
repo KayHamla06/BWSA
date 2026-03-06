@@ -2,22 +2,14 @@ import { connectDB } from '@/lib/db';
 import { verifyToken } from '@/lib/jwt';
 import Payment from '@/models/Payment';
 import { NextResponse } from 'next/server';
+import { extractAuth, serverError } from '@/lib/apiError';
 
 export async function GET(request) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const { limit = '50', page = '1', status } = request.nextUrl.searchParams;
 
@@ -56,7 +48,6 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error('List payments error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'List payments error');
   }
 }

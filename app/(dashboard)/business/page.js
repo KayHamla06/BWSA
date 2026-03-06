@@ -33,7 +33,7 @@ export default function BusinessPage() {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error);
+      if (!res.ok) throw new Error(result.message || result.error);
 
       toast.success('Business information updated!');
     } catch (error) {
@@ -43,18 +43,18 @@ export default function BusinessPage() {
     }
   };
 
-  if (loading) return <div>Loading...</div>;
+  if (loading) return <div className="flex items-center justify-center py-12"><div className="animate-spin rounded-full h-8 w-8 border-2 border-emerald-500 border-t-transparent" /></div>;
 
   return (
-    <div className="space-y-6 animate-slide-in-left">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
           <Building2 className="text-emerald-500" />
           Business Information
         </h1>
       </div>
 
-      <div className="glass rounded-xl p-6 card-shadow max-w-2xl">
+      <div className="glass rounded-xl p-4 sm:p-6 max-w-2xl">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium mb-2">Business Name</label>
@@ -63,7 +63,7 @@ export default function BusinessPage() {
               name="businessName"
               value={formData?.businessName || business.name || ''}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -73,7 +73,7 @@ export default function BusinessPage() {
               name="businessDescription"
               value={formData?.businessDescription || business.description || ''}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
               rows="4"
             />
           </div>
@@ -85,7 +85,7 @@ export default function BusinessPage() {
               name="whatsappNumber"
               value={formData?.whatsappNumber || business.whatsappNumber || ''}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -96,7 +96,7 @@ export default function BusinessPage() {
               name="payoutEmail"
               value={formData?.payoutEmail || business.payoutEmail || ''}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 
@@ -107,7 +107,7 @@ export default function BusinessPage() {
               name="supportEmail"
               value={formData?.supportEmail || business.supportEmail || ''}
               onChange={handleChange}
-              className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+              className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             />
           </div>
 

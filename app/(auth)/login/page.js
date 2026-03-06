@@ -47,7 +47,7 @@ export default function LoginPage() {
         <div className={styles.glassCard}>
           <div className="text-center mb-10">
             <h1 className={styles.title}>Welcome Back</h1>
-            <p className={styles.subtitle}>Sign in to your WhatsApp PayShap account</p>
+            <p className={styles.subtitle}>Sign in to your Ubuntu Market account</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-7">

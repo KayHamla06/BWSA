@@ -20,7 +20,7 @@ export default function ApiUsagePage() {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result.error);
+      if (!res.ok) throw new Error(result.message || result.error);
 
       toast.success('API key generated!');
     } catch (error) {
@@ -29,18 +29,18 @@ export default function ApiUsagePage() {
   };
 
   return (
-    <div className="space-y-6 animate-slide-in-left">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2">
           <Zap className="text-emerald-500" />
           API Usage
         </h1>
       </div>
 
-      <div className="glass rounded-xl p-6 card-shadow">
-        <h2 className="text-xl font-bold mb-4">Your API Key</h2>
+      <div className="glass rounded-xl p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">Your API Key</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          Use this API key to authenticate requests to the WhatsApp PayShap API
+          Use this API key to authenticate requests to the Ubuntu Market API
         </p>
 
         <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4 font-mono break-all flex justify-between items-center gap-4">
@@ -58,8 +58,8 @@ export default function ApiUsagePage() {
         </button>
       </div>
 
-      <div className="glass rounded-xl p-6 card-shadow">
-        <h2 className="text-xl font-bold mb-4">API Documentation</h2>
+      <div className="glass rounded-xl p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold mb-4">API Documentation</h2>
         <div className="space-y-4 text-sm">
           <div>
             <h3 className="font-semibold mb-2">Create Payment Link</h3>

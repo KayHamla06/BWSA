@@ -4,27 +4,19 @@ import Payment from '@/models/Payment';
 import ApiKey from '@/models/ApiKey';
 import User from '@/models/User';
 import { NextResponse } from 'next/server';
+import { extractAuth, notFoundError, serverError } from '@/lib/apiError';
 
 export async function GET(request) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return notFoundError('User not found');
     }
 
     // Get monthly stats
@@ -82,7 +74,6 @@ export async function GET(request) {
       },
     });
   } catch (error) {
-    console.error('Get usage error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Get usage error');
   }
 }

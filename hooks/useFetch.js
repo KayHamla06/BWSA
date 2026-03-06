@@ -20,7 +20,7 @@ export function useFetch(url, options = {}) {
         const res = await fetch(url, { ...options, headers });
         const json = await res.json();
 
-        if (!res.ok) throw new Error(json.error || 'Failed to fetch');
+        if (!res.ok) throw new Error(json.message || json.error || 'Failed to fetch');
 
         setData(json);
         setError(null);

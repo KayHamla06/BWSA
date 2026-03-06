@@ -41,7 +41,7 @@ export default function PaymentForm({ onSubmit, loading: externalLoading }) {
       const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error || 'Failed to create payment');
+        toast.error(data.message || data.error || 'Failed to create payment');
         return;
       }
 
@@ -64,7 +64,7 @@ export default function PaymentForm({ onSubmit, loading: externalLoading }) {
           value={formData.customerName}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           placeholder="Enter customer name"
         />
       </div>
@@ -76,7 +76,7 @@ export default function PaymentForm({ onSubmit, loading: externalLoading }) {
           value={formData.phone}
           onChange={handleChange}
           required
-          className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           placeholder="e.g. 27612345678"
         />
       </div>
@@ -90,7 +90,7 @@ export default function PaymentForm({ onSubmit, loading: externalLoading }) {
           required
           min="1"
           step="0.01"
-          className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           placeholder="0.00"
         />
       </div>
@@ -101,14 +101,14 @@ export default function PaymentForm({ onSubmit, loading: externalLoading }) {
           value={formData.description}
           onChange={handleChange}
           rows={3}
-          className="w-full px-4 py-2 border rounded-lg input-focus dark:bg-gray-800"
+          className="w-full px-4 py-2 border rounded-lg dark:bg-gray-800 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           placeholder="Payment description"
         />
       </div>
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors disabled:opacity-50"
+        className="w-full btn-primary disabled:opacity-50"
       >
         {isLoading ? 'Creating...' : 'Create Payment Link'}
       </button>

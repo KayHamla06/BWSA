@@ -3,22 +3,14 @@ import { verifyToken } from '@/lib/jwt';
 import ApiKey from '@/models/ApiKey';
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { extractAuth, serverError } from '@/lib/apiError';
 
 export async function POST(request) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const { name } = await request.json();
 
@@ -39,7 +31,6 @@ export async function POST(request) {
       },
     });
   } catch (error) {
-    console.error('Generate API key error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Generate API key error');
   }
 }

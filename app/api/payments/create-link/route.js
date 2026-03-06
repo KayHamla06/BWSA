@@ -7,22 +7,14 @@ import { validateAmount } from '@/lib/validators';
 import { whatsappService } from '@/services/whatsapp';
 import { ozowService } from '@/services/ozow';
 import { NextResponse } from 'next/server';
+import { extractAuth, userError, notFoundError, serverError } from '@/lib/apiError';
 
 export async function POST(request) {
   try {
     await connectDB();
 
-    const token = request.headers.get('Authorization')?.replace('Bearer ', '');
-
-    if (!token) {
-      return NextResponse.json({ error: 'No token provided' }, { status: 401 });
-    }
-
-    const decoded = verifyToken(token);
-
-    if (!decoded) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
 
     const {
       customerName,
@@ -36,16 +28,13 @@ export async function POST(request) {
 
     // Validation
     if (!customerName || !customerPhone || !validateAmount(amount)) {
-      return NextResponse.json(
-        { error: 'Invalid input data' },
-        { status: 400 }
-      );
+      return userError('Please provide customer name, phone number, and a valid amount');
     }
 
     const user = await User.findById(decoded.userId);
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return notFoundError('User not found');
     }
 
     // Find or create customer
@@ -137,7 +126,6 @@ export async function POST(request) {
       }
     });
   } catch (error) {
-    console.error('Create payment link error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverError(error, 'Create payment link error');
   }
 }
