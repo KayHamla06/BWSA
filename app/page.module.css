@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 /* Hero & Layout */
 .hero {
   @apply min-h-screen flex flex-col;

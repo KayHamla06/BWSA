@@ -1,3 +1,5 @@
+@reference "tailwindcss";
+
 .container {
   @apply min-h-screen flex items-center justify-center px-4 py-16;
   background: linear-gradient(135deg, #ecfdf5 0%, #dbeafe 100%);

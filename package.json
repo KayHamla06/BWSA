@@ -7,12 +7,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "node server.js",
     "lint": "next lint",
     "lint:fix": "npm exec --yes eslint -- . --fix",
     "start:prod": "NODE_ENV=production node server.js"
   },
   "dependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
     "axios": "^1.6.0",
     "bcryptjs": "^2.4.3",
     "clsx": "^2.0.0",
@@ -25,7 +26,7 @@
     "express-validator": "^7.0.1",
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
-    "lucide-react": "^0.263.0",
+    "lucide-react": "^0.263.1",
     "mongoose": "^8.0.0",
     "morgan": "^1.10.0",
     "next": "^16.1.6",
