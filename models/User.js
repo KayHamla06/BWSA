@@ -14,7 +14,7 @@ const UserSchema = new Schema(
     logo: { type: String, default: null },
     plan: {
       type: String,
-      enum: ['free', 'basic', 'pro', 'enterprise'],
+      enum: ['free', 'basic', 'pro', 'enterprise', 'payg', 'r100', 'r500'],
       default: 'free',
     },
     payoutInfo: {

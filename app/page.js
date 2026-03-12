@@ -42,6 +42,8 @@ import styles from './page.module.css';const plans = [
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || data?.error || 'Login failed');
+      if (data.token) localStorage.setItem('token', data.token);
+      if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
       window.location.href = '/dashboard';
     } catch (err) {
       setMessage(err.message);
@@ -62,6 +64,8 @@ import styles from './page.module.css';const plans = [
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || data?.error || 'Signup failed');
+      if (data.token) localStorage.setItem('token', data.token);
+      if (data.user) localStorage.setItem('user', JSON.stringify(data.user));
       window.location.href = '/dashboard';
     } catch (err) {
       setMessage(err.message);

@@ -90,9 +90,10 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('Registration error:', error.message, error.stack);
+    const isDev = process.env.NODE_ENV !== 'production';
     return NextResponse.json(
-      { success: false, errorType: 'SERVER_ERROR', message: 'Something went wrong. Please try again later.', where: 'server' },
+      { success: false, errorType: 'SERVER_ERROR', message: isDev ? error.message : 'Something went wrong. Please try again later.', where: 'server' },
       { status: 500 }
     );
   }
