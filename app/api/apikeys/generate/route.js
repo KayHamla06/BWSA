@@ -4,6 +4,26 @@ import ApiKey from '@/models/ApiKey';
 import { NextResponse } from 'next/server';
 import { extractAuth, serverError } from '@/lib/apiError';
 
+export async function GET(request) {
+  try {
+    await connectDB();
+
+    const { decoded, errorResponse } = extractAuth(request, verifyToken);
+    if (errorResponse) return errorResponse;
+
+    const apiKeys = await ApiKey.find({ userId: decoded.userId })
+      .select('keyPrefix name usageCount monthlyLimit lastUsed createdAt')
+      .sort({ createdAt: -1 });
+
+    return NextResponse.json({
+      success: true,
+      apiKeys,
+    });
+  } catch (error) {
+    return serverError(error, 'List API keys error');
+  }
+}
+
 export async function POST(request) {
   try {
     await connectDB();
