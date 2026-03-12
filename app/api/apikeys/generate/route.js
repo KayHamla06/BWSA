@@ -2,7 +2,6 @@ import { connectDB } from '@/lib/db';
 import { verifyToken } from '@/lib/jwt';
 import ApiKey from '@/models/ApiKey';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { extractAuth, serverError } from '@/lib/apiError';
 
 export async function POST(request) {
@@ -14,18 +13,18 @@ export async function POST(request) {
 
     const { name } = await request.json();
 
-    const apiKey = await ApiKey.create({
-      userId: decoded.userId,
-      key: crypto.randomUUID(),
-      name: name || 'New API Key',
-    });
+    const { apiKey, rawKey } = await ApiKey.generateKey(
+      decoded.userId,
+      name || 'New API Key'
+    );
 
     return NextResponse.json({
       success: true,
       message: 'API key generated',
       apiKey: {
         id: apiKey._id,
-        key: apiKey.key,
+        key: rawKey,
+        keyPrefix: apiKey.keyPrefix,
         name: apiKey.name,
         createdAt: apiKey.createdAt,
       },

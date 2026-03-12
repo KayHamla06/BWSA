@@ -102,7 +102,14 @@ async function createPaymentRequest(
 function verifyOzowWebhook(body, signature) {
   const { privateKey } = getOzowConfig();
 
-  if (!privateKey || !signature) return false;
+  if (!privateKey || !body || typeof body !== 'object') return false;
+
+  const providedSignature = String(signature || body.HashCheck || '')
+    .replace('sha512=', '')
+    .trim()
+    .toLowerCase();
+
+  if (!providedSignature) return false;
 
   const data = { ...body };
   delete data.HashCheck;
@@ -112,7 +119,14 @@ function verifyOzowWebhook(body, signature) {
     .map((key) => data[key]);
 
   const expectedHash = generateHash(fields, privateKey);
-  return expectedHash === String(signature).toLowerCase();
+  const expectedBuffer = Buffer.from(expectedHash, 'utf8');
+  const providedBuffer = Buffer.from(providedSignature, 'utf8');
+
+  if (expectedBuffer.length !== providedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
 }
 
 export const ozowService = {

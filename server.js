@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { createServer } from 'http';
 import next from 'next';
 
@@ -10,7 +11,15 @@ const handle = app.getRequestHandler();
 
 app
   .prepare()
-  .then(() => {
+  .then(async () => {
+    try {
+      const { assertJwtConfiguration } = await import('./lib/jwt.js');
+      assertJwtConfiguration();
+    } catch (error) {
+      console.error(`Startup configuration error: ${error.message}`);
+      process.exit(1);
+    }
+
     createServer((req, res) => {
       handle(req, res);
     }).listen(port, hostname, () => {

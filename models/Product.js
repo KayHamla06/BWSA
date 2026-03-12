@@ -1,4 +1,6 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose from 'mongoose';
+
+const { Schema, model, models } = mongoose;
 
 const ProductSchema = new Schema(
   {
@@ -28,7 +30,6 @@ const ProductSchema = new Schema(
 // Indexes for efficient queries
 ProductSchema.index({ userId: 1, isActive: 1 });
 ProductSchema.index({ userId: 1, category: 1 });
-ProductSchema.index({ sku: 1 });
 
 // Virtual for low stock alert
 ProductSchema.virtual('isLowStock').get(function () {

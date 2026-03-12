@@ -24,7 +24,7 @@ export async function GET(request, { params }) {
       success: true,
       apiKey: {
         id: apiKey._id,
-        key: apiKey.key,
+        keyPrefix: apiKey.keyPrefix,
         name: apiKey.name,
         usageCount: apiKey.usageCount,
         monthlyLimit: apiKey.monthlyLimit,

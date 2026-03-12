@@ -1,19 +1,45 @@
 // app/api/webhooks/whatsapp/route.js
+import crypto from 'crypto';
 import { connectDB } from '@/lib/db';
 import { NextResponse } from 'next/server';
 import Customer from '@/models/Customer';
-import Order from '@/models/Order';
 import Product from '@/models/Product';
 import User from '@/models/User';
 import whatsappService from '@/services/whatsapp.service';
 import orderService from '@/services/order.service';
-import productService from '@/services/product.service';
 import logger from '@/utils/logger';
 
 // Webhook verification token
-const WEBHOOK_VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN || 'verify_token_12345';
+const WEBHOOK_VERIFY_TOKEN = process.env.WHATSAPP_WEBHOOK_VERIFY_TOKEN;
+const WHATSAPP_APP_SECRET = process.env.WHATSAPP_APP_SECRET;
+
+function verifyWhatsAppSignature(rawBody, signatureHeader) {
+  if (!WHATSAPP_APP_SECRET || !signatureHeader) {
+    return false;
+  }
+
+  const signature = signatureHeader.replace('sha256=', '').trim();
+  const expectedSignature = crypto
+    .createHmac('sha256', WHATSAPP_APP_SECRET)
+    .update(rawBody)
+    .digest('hex');
+
+  const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+  const receivedBuffer = Buffer.from(signature, 'utf8');
+
+  if (expectedBuffer.length !== receivedBuffer.length) {
+    return false;
+  }
+
+  return crypto.timingSafeEqual(expectedBuffer, receivedBuffer);
+}
 
 export async function GET(request) {
+  if (!WEBHOOK_VERIFY_TOKEN) {
+    logger.error('WHATSAPP_WEBHOOK_VERIFY_TOKEN is not configured');
+    return NextResponse.json({ error: 'Webhook verification not configured' }, { status: 500 });
+  }
+
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get('hub.mode');
   const token = searchParams.get('hub.verify_token');
@@ -28,9 +54,27 @@ export async function GET(request) {
 
 export async function POST(request) {
   try {
-    await connectDB();
+    if (!WHATSAPP_APP_SECRET) {
+      logger.error('WHATSAPP_APP_SECRET is not configured');
+      return NextResponse.json({ error: 'Webhook signature verification not configured' }, { status: 500 });
+    }
 
-    const webhookData = await request.json();
+    const signatureHeader = request.headers.get('x-hub-signature-256');
+    const rawBody = await request.text();
+
+    if (!verifyWhatsAppSignature(rawBody, signatureHeader)) {
+      logger.warn('Rejected WhatsApp webhook due to invalid signature');
+      return NextResponse.json({ error: 'Invalid webhook signature' }, { status: 401 });
+    }
+
+    let webhookData;
+    try {
+      webhookData = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json({ error: 'Invalid webhook payload' }, { status: 400 });
+    }
+
+    await connectDB();
 
     // Extract message data
     const entry = webhookData.entry?.[0];
@@ -147,9 +191,14 @@ async function handleInteractiveMessage(interactive, fromPhone, customer) {
   else if (replyId.startsWith('buy_')) {
     const productId = replyId.replace('buy_', '');
     const product = await Product.findById(productId);
-    const business = await User.findById(product.userId);
 
-    if (!product || !business) {
+    if (!product) {
+      await whatsappService.sendMessage(fromPhone, '❌ Product or business not found');
+      return;
+    }
+
+    const business = await User.findById(product.userId);
+    if (!business) {
       await whatsappService.sendMessage(fromPhone, '❌ Product or business not found');
       return;
     }

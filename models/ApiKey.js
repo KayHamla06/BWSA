@@ -1,4 +1,6 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose from 'mongoose';
+
+const { Schema, model, models } = mongoose;
 import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 
@@ -29,7 +31,7 @@ ApiKeySchema.index({ keyPrefix: 1 });
 
 // Static method to generate new API key
 ApiKeySchema.statics.generateKey = async function (userId, name = 'Default API Key') {
-  // Generate a secure random API key  const rawKey = `cc_${crypto.randomBytes(32).toString('hex')}`;
+  const rawKey = `cc_${crypto.randomBytes(32).toString('hex')}`;
   const keyPrefix = rawKey.substring(0, 8);
   
   // Hash the key before storing

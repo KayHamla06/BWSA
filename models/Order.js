@@ -1,4 +1,6 @@
-import { Schema, model, models } from 'mongoose';
+import mongoose from 'mongoose';
+
+const { Schema, model, models } = mongoose;
 
 const OrderItemSchema = new Schema({
   productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
@@ -60,7 +62,6 @@ const OrderSchema = new Schema(
 // Indexes
 OrderSchema.index({ userId: 1, status: 1 });
 OrderSchema.index({ customerId: 1 });
-OrderSchema.index({ orderNumber: 1 });
 OrderSchema.index({ createdAt: -1 });
 
 // Pre-save middleware to generate order number
