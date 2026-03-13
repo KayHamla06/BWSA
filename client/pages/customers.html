@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
 </head>
 <body>
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
         <button class="sidebar-close" id="sidebarClose">&times;</button>
       </div>
       <nav class="sidebar-nav">
@@ -37,6 +38,43 @@
 
       <div class="content-area">
         <div class="card">
+          <h2 class="card-title">Promotions</h2>
+          <p class="card-subtitle">Send WhatsApp template broadcasts to your customer segments.</p>
+          <form id="campaignForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerSearch">Search Customers</label>
+                <input type="text" id="customerSearch" placeholder="Search by name or number">
+              </div>
+              <div class="form-group">
+                <label for="customerSegment">Customer Segment</label>
+                <select id="customerSegment" class="select-input">
+                  <option value="all">All customers</option>
+                  <option value="repeat">Repeat buyers</option>
+                  <option value="inactive">Inactive 30+ days</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="templateName">WhatsApp Template Name</label>
+                <input type="text" id="templateName" placeholder="promo_template">
+              </div>
+              <div class="form-group">
+                <label for="templateLanguage">Template Language</label>
+                <input type="text" id="templateLanguage" value="en" placeholder="en">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="campaignMessage">Promotion Message</label>
+              <textarea id="campaignMessage" rows="3" placeholder="Discounts, new arrivals, flash sale..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Queue Campaign</button>
+          </form>
+          <div id="campaignHistory" class="stack-list"></div>
+        </div>
+
+        <div class="card">
           <div class="table-container">
             <table class="data-table">
               <thead>
@@ -46,10 +84,11 @@
                   <th>Orders</th>
                   <th>Total Spent</th>
                   <th>Last Order</th>
+                  <th>Last Contact</th>
                 </tr>
               </thead>
               <tbody id="customersBody">
-                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                <tr><td colspan="6" class="text-center">Loading...</td></tr>
               </tbody>
             </table>
           </div>
@@ -60,6 +99,7 @@
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/customers.js"></script>
 </body>

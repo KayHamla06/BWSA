@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <div class="product-category">${escapeHtml(p.category || 'Uncategorized')}</div>
             <div class="product-meta">
               <span class="product-price">R${(p.price || 0).toFixed(2)}</span>
-              <span class="product-stock ${(p.stock || 0) < 5 ? 'low' : ''}">${p.stock || 0} in stock</span>
+              <span class="product-stock ${(p.stock || 0) === 0 ? 'out' : (p.stock || 0) < 5 ? 'low' : ''}">${(p.stock || 0) === 0 ? 'Out of Stock' : `${p.stock || 0} in stock`}</span>
             </div>
             <div class="product-actions">
               <button class="btn btn-outline btn-sm" onclick="editProduct('${p._id}')">Edit</button>

@@ -7,14 +7,16 @@
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/pricing.css">
   <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
 </head>
 <body>
   <div class="app-layout">
     <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
         <button class="sidebar-close" id="sidebarClose">&times;</button>
       </div>
       <nav class="sidebar-nav">
@@ -51,6 +53,8 @@
       </header>
 
       <div class="content-area">
+        <!-- ── Subscription Banner & Limit Alerts ── -->
+        <div id="subscriptionSection"></div>
         <!-- Stats Cards -->
         <div class="stats-grid">
           <div class="stat-card">
@@ -79,6 +83,99 @@
             <div class="stat-info">
               <span class="stat-label">Total Orders</span>
               <span class="stat-value" id="totalOrders">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="receipt"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Receipts Today</span>
+              <span class="stat-value" id="receiptsToday">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="wallet"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Ubuntu Pay Balance</span>
+              <span class="stat-value" id="ubuntuPayBalance">R0.00</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="calendar-days"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Receipts This Week</span>
+              <span class="stat-value" id="receiptsWeek">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="calendar-range"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Receipts This Month</span>
+              <span class="stat-value" id="receiptsMonth">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="badge-check"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Approved Payments</span>
+              <span class="stat-value" id="approvedPayments">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Declined Payments</span>
+              <span class="stat-value" id="declinedPayments">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="clock-3"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Pending Orders</span>
+              <span class="stat-value" id="pendingOrders">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="landmark"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Pending Withdrawals</span>
+              <span class="stat-value" id="pendingWithdrawals">0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Payment Routing</h2>
+          <p class="card-subtitle" id="paymentFlowMessage">Ubuntu Pay is active. Incoming customer payments settle to your platform balance first.</p>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card">
+            <h2 class="card-title">Daily Revenue</h2>
+            <div id="dailyRevenueChart" class="mini-chart"></div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Orders Per Day</h2>
+            <div id="ordersPerDayChart" class="mini-chart"></div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Customer Growth</h2>
+            <div id="customerGrowthChart" class="mini-chart"></div>
+          </div>
+        </div>
+
+        <!-- Usage Meters + Fee Summary Row -->
+        <div class="chart-grid" id="planInfoRow">
+          <div class="card">
+            <h2 class="card-title">Plan Usage</h2>
+            <div id="usageMetersSection" class="usage-section">
+              <p class="text-muted" style="font-size:13px;">Loading usage…</p>
+            </div>
+            <div style="margin-top:16px;" id="upgradeLinkWrap"></div>
+          </div>
+          <div class="card">
+            <h2 class="card-title">Transaction Fees (Current Plan)</h2>
+            <div id="feeSummarySection">
+              <p class="text-muted" style="font-size:13px;">Loading…</p>
             </div>
           </div>
         </div>
@@ -128,6 +225,7 @@
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/dashboard.js"></script>
 </body>

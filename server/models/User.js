@@ -28,6 +28,8 @@ const UserSchema = new Schema(
     twoFactorSecret: { type: String, default: null },
     isVerified: { type: Boolean, default: false },
     verificationToken: { type: String, default: null },
+    verificationPin: { type: String, default: null },
+    verificationPinExpires: { type: Date, default: null },
     status: {
       type: String,
       enum: ['active', 'suspended', 'inactive'],

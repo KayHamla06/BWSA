@@ -8,9 +8,12 @@ const CustomerSchema = new Schema(
     name: { type: String, required: true },
     email: { type: String, default: '' },
     whatsappNumber: { type: String, required: true },
+    phoneNumber: { type: String, default: '' },
     totalSpent: { type: Number, default: 0 },
+    totalOrders: { type: Number, default: 0 },
     orderCount: { type: Number, default: 0 },
     lastOrderDate: { type: Date, default: null },
+    lastContactDate: { type: Date, default: null },
   },
   { timestamps: true }
 );

@@ -15,21 +15,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const orders = data.orders || data;
 
       if (!orders || orders.length === 0) {
-        ordersBody.innerHTML = '<tr><td colspan="5" class="text-center">No orders found</td></tr>';
+        ordersBody.innerHTML = '<tr><td colspan="6" class="text-center">No orders found</td></tr>';
         return;
       }
 
       ordersBody.innerHTML = orders.map(o => `
         <tr>
-          <td>${escapeHtml(o.productSnapshot?.name || 'N/A')}</td>
+          <td>${escapeHtml(o.paymentReference || o._id || 'N/A')}</td>
           <td>${escapeHtml(o.customerPhone || 'N/A')}</td>
+          <td>${escapeHtml(o.productSnapshot?.name || o.productId?.name || 'N/A')}</td>
           <td>R${(o.amount || 0).toFixed(2)}</td>
-          <td><span class="badge badge-${o.status}">${o.status}</span></td>
+          <td><span class="badge badge-${String(o.displayStatus || 'PENDING').toLowerCase()}">${escapeHtml(o.displayStatus || 'PENDING')}</span></td>
           <td>${new Date(o.createdAt).toLocaleDateString()}</td>
         </tr>
       `).join('');
     } catch (err) {
-      ordersBody.innerHTML = '<tr><td colspan="5" class="text-center">Error loading orders</td></tr>';
+      ordersBody.innerHTML = '<tr><td colspan="6" class="text-center">Error loading orders</td></tr>';
       console.error('Load orders error:', err);
     }
   }

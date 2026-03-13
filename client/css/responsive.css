@@ -4,6 +4,18 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .wallet-balance-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .split-card-header {
+    flex-direction: column;
+  }
+
   .product-grid {
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   }

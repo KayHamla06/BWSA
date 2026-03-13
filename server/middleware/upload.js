@@ -16,3 +16,16 @@ export const upload = multer({
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+export const uploadLogo = multer({
+  storage,
+  fileFilter(req, file, cb) {
+    const allowed = ['image/jpeg', 'image/png'];
+    if (allowed.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PNG and JPG logo images are allowed'), false);
+    }
+  },
+  limits: { fileSize: 2 * 1024 * 1024 },
+});

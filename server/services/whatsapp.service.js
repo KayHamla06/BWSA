@@ -127,6 +127,99 @@ export async function sendPaymentConfirmation(toPhone, amount, reference) {
   return sendTextMessage(toPhone, message);
 }
 
+export async function sendDocumentMessage(toPhone, documentUrl, filename = 'receipt.pdf', caption = 'Ubuntu Market Receipt') {
+  if (!isConfigured()) return { success: false, message: 'WhatsApp not configured' };
+  const to = String(toPhone).replace(/^\+/, '').replace(/\s/g, '');
+
+  try {
+    await sendRequest({
+      messaging_product: 'whatsapp',
+      to,
+      type: 'document',
+      document: {
+        link: documentUrl,
+        filename,
+        caption,
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('WhatsApp document send failed:', error.response?.data || error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function sendTemplateMessage(toPhone, templateName, languageCode = 'en', bodyParameters = []) {
+  if (!isConfigured()) return { success: false, message: 'WhatsApp not configured' };
+  const to = String(toPhone).replace(/^\+/, '').replace(/\s/g, '');
+
+  try {
+    await sendRequest({
+      messaging_product: 'whatsapp',
+      to,
+      type: 'template',
+      template: {
+        name: templateName,
+        language: { code: languageCode },
+        ...(bodyParameters.length > 0
+          ? {
+              components: [
+                {
+                  type: 'body',
+                  parameters: bodyParameters.map((text) => ({ type: 'text', text: String(text) })),
+                },
+              ],
+            }
+          : {}),
+      },
+    });
+    return { success: true };
+  } catch (error) {
+    console.error('WhatsApp template send failed:', error.response?.data || error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Send messages to multiple recipients in rate-limit-safe batches.
+ * @param {Array<{phoneNumber: string, body?: string, templateName?: string, templateLanguage?: string, bodyParameters?: string[]}>} recipients
+ * @param {{ batchSize?: number, delayBetweenMs?: number, useTemplate?: boolean }} [options]
+ * @returns {Promise<{ sent: number, failed: number }>}
+ */
+export async function sendBatch(recipients, options = {}) {
+  const { batchSize = 20, delayBetweenMs = 1200, useTemplate = false } = options;
+  let sent = 0;
+  let failed = 0;
+  const results = [];
+
+  for (let i = 0; i < recipients.length; i++) {
+    const r = recipients[i];
+    try {
+      let result;
+      if (useTemplate && r.templateName) {
+        result = await sendTemplateMessage(r.phoneNumber, r.templateName, r.templateLanguage || 'en', r.bodyParameters || []);
+      } else {
+        result = await sendTextMessage(r.phoneNumber, r.body || '');
+      }
+      if (result.success) { sent += 1; results.push({ status: 'sent', phone: r.phoneNumber }); }
+      else { failed += 1; results.push({ status: 'failed', phone: r.phoneNumber, error: result.error }); }
+    } catch (err) {
+      failed += 1;
+      results.push({ status: 'failed', phone: r.phoneNumber, error: err.message });
+    }
+    // Delay between messages; after each full batch also yield to event loop
+    if (i < recipients.length - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delayBetweenMs));
+      if ((i + 1) % batchSize === 0) {
+        // Yield to event loop between batches to avoid blocking
+        await new Promise((resolve) => setImmediate(resolve));
+      }
+    }
+  }
+
+  return { sent, failed, results };
+}
+
 export const whatsappService = {
   isConfigured,
   sendTextMessage,
@@ -134,4 +227,7 @@ export const whatsappService = {
   sendProductDetails,
   sendPaymentLink,
   sendPaymentConfirmation,
+  sendDocumentMessage,
+  sendTemplateMessage,
+  sendBatch,
 };

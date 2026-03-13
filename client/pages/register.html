@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Register - Ubuntu Market</title>
+  <title>Create Account - Ubuntu Market</title>
   <link rel="stylesheet" href="/css/variables.css">
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/pricing.css">
   <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
 </head>
 <body class="auth-page">
   <div class="auth-container">
-    <div class="auth-card">
+    <div class="auth-card pop-in">
       <div class="auth-logo">
-        <h1><i data-lucide="globe"></i> Ubuntu Market</h1>
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="auth-logo-img">
         <p>Start accepting payments in minutes</p>
       </div>
 
@@ -23,6 +25,37 @@
       </div>
 
       <form id="registerForm" class="auth-form">
+        <!-- Plan Selection -->
+        <div class="form-group">
+          <label style="font-weight:700;margin-bottom:10px;display:block;">Choose Your Plan <a href="/pricing" target="_blank" style="font-size:12px;color:var(--primary-dark);font-weight:500;margin-left:6px;">Compare plans &rarr;</a></label>
+          <div class="plan-select-grid" id="planSelectGrid">
+            <label class="plan-select-card" for="plan-payg">
+              <input type="radio" id="plan-payg" name="plan" value="payg">
+              <div class="plan-select-name">Pay-per-Use</div>
+              <div class="plan-select-price">Free</div>
+              <div class="plan-select-trial" style="color:var(--text-muted);">No trial</div>
+            </label>
+            <label class="plan-select-card" for="plan-starter">
+              <input type="radio" id="plan-starter" name="plan" value="starter" checked>
+              <div class="plan-select-name">Starter</div>
+              <div class="plan-select-price">R79/mo</div>
+              <div class="plan-select-trial">14-day free trial</div>
+            </label>
+            <label class="plan-select-card" for="plan-business">
+              <input type="radio" id="plan-business" name="plan" value="business">
+              <div class="plan-select-name">Business</div>
+              <div class="plan-select-price">R249/mo</div>
+              <div class="plan-select-trial">14-day free trial</div>
+            </label>
+            <label class="plan-select-card" for="plan-pro">
+              <input type="radio" id="plan-pro" name="plan" value="pro">
+              <div class="plan-select-name">Pro</div>
+              <div class="plan-select-price">R699/mo</div>
+              <div class="plan-select-trial">14-day free trial</div>
+            </label>
+          </div>
+        </div>
+
         <div class="form-group">
           <label for="businessName">Business Name</label>
           <input type="text" id="businessName" name="businessName" placeholder="Your Business" required>
@@ -39,23 +72,64 @@
           <label for="password">Password</label>
           <input type="password" id="password" name="password" placeholder="Min 8 characters" required minlength="8">
         </div>
+        <div class="form-group">
+          <label for="confirmPassword">Confirm Password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter password" required minlength="8">
+        </div>
         <button type="submit" class="btn btn-primary btn-full" id="registerBtn">Create Account</button>
-        <div id="errorMsg" class="error-message" style="display:none"></div>
       </form>
     </div>
   </div>
 
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container"></div>
+
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/app.js"></script>
   <script>
+    // Pre-select plan from URL ?plan=xxx
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const planParam = params.get('plan');
+      if (planParam) {
+        const radio = document.querySelector(`input[name="plan"][value="${CSS.escape(planParam)}"]`);
+        if (radio) radio.checked = true;
+      }
+      // Highlight selected card
+      document.querySelectorAll('.plan-select-card').forEach(card => {
+        const radio = card.querySelector('input[type="radio"]');
+        if (radio && radio.checked) card.classList.add('selected');
+        radio?.addEventListener('change', () => {
+          document.querySelectorAll('.plan-select-card').forEach(c => c.classList.remove('selected'));
+          card.classList.add('selected');
+        });
+      });
+    })();
+
     document.getElementById('registerForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('registerBtn');
-      const errEl = document.getElementById('errorMsg');
       btn.disabled = true;
       btn.textContent = 'Creating account...';
-      errEl.style.display = 'none';
+
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+
+      if (password !== confirmPassword) {
+        showToast('Passwords do not match', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
+
+      if (password.length < 8) {
+        showToast('Password must be at least 8 characters', 'error');
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+        return;
+      }
 
       try {
         const data = await api.post('/api/auth/register', {
@@ -63,15 +137,21 @@
           name: document.getElementById('businessName').value,
           email: document.getElementById('email').value,
           phone: document.getElementById('phone').value,
-          password: document.getElementById('password').value,
-          plan: 'free',
+          password,
+          confirmPassword,
+          plan: document.querySelector('input[name="plan"]:checked')?.value || 'starter',
         });
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = '/dashboard';
+        showToast('Account created successfully!', 'success');
+
+        if (data.requiresVerification) {
+          setTimeout(() => { window.location.href = '/verify'; }, 1200);
+        } else {
+          setTimeout(() => { window.location.href = '/dashboard'; }, 1200);
+        }
       } catch (err) {
-        errEl.textContent = err.message;
-        errEl.style.display = 'block';
+        showToast(err.message || 'Registration failed', 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Create Account';

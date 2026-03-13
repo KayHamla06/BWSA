@@ -16,11 +16,24 @@ const PaymentSchema = new Schema(
     },
     transactionId: { type: String, unique: true, sparse: true },
     paymentReference: { type: String },
-    paymentMethod: { type: String, default: 'ozow' },
+    paymentMethod: { type: String, default: 'payfast' },
+    paymentProvider: { type: String, default: 'payfast' },
+    paymentFlow: {
+      type: String,
+      enum: ['ubuntu_pay', 'payfast_direct'],
+      default: 'ubuntu_pay',
+    },
+    destinationType: {
+      type: String,
+      enum: ['platform_wallet', 'seller_direct'],
+      default: 'platform_wallet',
+    },
     paymentUrl: { type: String, default: '' },
     webhookData: { type: Schema.Types.Mixed, default: null },
     paidAt: { type: Date, default: null },
     failureReason: { type: String, default: null },
+    walletCreditedAt: { type: Date, default: null },
+    withdrawalEligible: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

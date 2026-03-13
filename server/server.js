@@ -18,9 +18,10 @@ import compression from 'compression';
 import mongoSanitize from 'express-mongo-sanitize';
 
 import { connectDB } from '../config/database.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { apiLimiter } from './middleware/rateLimiter.js';
+import { errorMiddleware } from './errors/ErrorMiddleware.js';
+import { apiLimiter, webhookLimiter } from './middleware/rateLimiter.js';
 import { logger } from './utils/logger.js';
+import { csrfProtection } from './middleware/csrf.js';
 
 // Routes
 import authRoutes from './routes/auth.routes.js';
@@ -28,10 +29,14 @@ import productRoutes from './routes/product.routes.js';
 import orderRoutes from './routes/order.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import customerRoutes from './routes/customer.routes.js';
+import campaignRoutes from './routes/campaign.routes.js';
+import couponRoutes from './routes/coupon.routes.js';
 import webhookRoutes from './routes/webhook.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 import { addClient } from './services/notification.service.js';
+import { verifyWhatsApp, handleWhatsApp, handlePayfastWebhook } from './controllers/webhook.controller.js';
 
 const clientDir = path.join(rootDir, 'client');
 
@@ -74,13 +79,28 @@ app.use(morgan('short', {
   stream: { write: (msg) => logger.info(msg.trim()) },
 }));
 
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({
+  limit: '5mb',
+  verify: (req, _res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  },
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(mongoSanitize());
+app.use(csrfProtection);
+
+// Public webhook endpoints expected by providers.
+app.get('/webhook', verifyWhatsApp);
+app.post('/webhook', webhookLimiter, handleWhatsApp);
+app.post('/payment/webhook', webhookLimiter, handlePayfastWebhook);
+
+// Apply API-wide rate limits before handlers.
+app.use('/api', apiLimiter);
 
 // ===== Serve Static Files (CSS, JS, images) =====
 app.use('/css', express.static(path.join(clientDir, 'css'), { maxAge: '1d' }));
 app.use('/js', express.static(path.join(clientDir, 'js'), { maxAge: '1d' }));
+app.use('/assets', express.static(path.join(rootDir, 'assets'), { maxAge: '7d' }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { maxAge: '7d' }));
 
 // ===== API Routes =====
@@ -89,12 +109,12 @@ app.use('/api/products', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/customers', customerRoutes);
+app.use('/api/campaigns', campaignRoutes);
+app.use('/api/coupons', couponRoutes);
 app.use('/api/webhooks', webhookRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
-
-// ===== Rate Limit on API =====
-app.use('/api', apiLimiter);
+app.use('/api/subscription', subscriptionRoutes);
 
 // ===== SSE Notifications =====
 app.get('/api/notifications/stream', (req, res) => {
@@ -128,7 +148,7 @@ app.get('/api/health', (req, res) => {
 });
 
 // ===== Serve HTML Pages =====
-const pages = ['login', 'register', 'dashboard', 'products', 'orders', 'payments', 'customers', 'settings'];
+const pages = ['login', 'register', 'verify', 'dashboard', 'products', 'orders', 'payments', 'customers', 'settings', 'pricing'];
 
 pages.forEach(page => {
   app.get(`/${page}`, (req, res) => {
@@ -136,13 +156,13 @@ pages.forEach(page => {
   });
 });
 
-// Root redirect
+// Root — serve landing page
 app.get('/', (req, res) => {
-  res.redirect('/dashboard');
+  res.sendFile(path.join(clientDir, 'pages', 'index.html'));
 });
 
 // ===== Error Handler =====
-app.use(errorHandler);
+app.use(errorMiddleware);
 
 // ===== Start Server =====
 app.listen(PORT, '0.0.0.0', () => {

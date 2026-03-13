@@ -1,6 +1,6 @@
 // App — auth guard, sidebar toggle, logout, user display
 (function () {
-  const publicPages = ['/login', '/register'];
+  const publicPages = ['/login', '/register', '/verify'];
   const currentPath = window.location.pathname;
 
   // Auth guard: redirect to login if no token on protected pages
@@ -66,7 +66,19 @@
       try {
         const user = JSON.parse(localStorage.getItem('user'));
         if (user) {
-          topbarUser.textContent = user.businessName || user.name || user.email;
+          topbarUser.textContent = '';
+          if (user.logo) {
+            const image = document.createElement('img');
+            image.src = user.logo;
+            image.alt = `${user.businessName || user.name || 'Business'} logo`;
+            image.className = 'topbar-user-logo';
+            topbarUser.appendChild(image);
+          }
+
+          const label = document.createElement('span');
+          label.className = user.logo ? 'topbar-user-label' : 'topbar-user-fallback';
+          label.textContent = user.businessName || user.name || user.email;
+          topbarUser.appendChild(label);
         }
       } catch (e) { /* ignore */ }
     }

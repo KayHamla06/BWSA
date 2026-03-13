@@ -1,13 +1,15 @@
 # ChatCommerce OS 🚀
 
-A production-ready WhatsApp Business Operating System with integrated Ozow payment processing, product management, order tracking, automated messaging flows, and comprehensive analytics.
+A production-ready WhatsApp Business Operating System with PayFast payment routing, Ubuntu Pay wallet balances, product management, order tracking, automated messaging flows, and comprehensive analytics.
 
 ## 🎯 Features
 
 ### Core Functionality
 - **Product Management**: Full CRUD with inventory tracking and low-stock alerts
 - **Order Management**: Complete order lifecycle from creation to delivery
-- **Payment Processing**: Secure Ozow integration with HMAC webhook verification
+- **Payment Processing**: PayFast direct settlement or Ubuntu Pay platform settlement with signed webhook verification
+- **Ubuntu Pay Wallets**: Track seller balances on-platform and request withdrawals by bank, immediate payment, PayShap, QR, or Capitec
+- **Secure Ledger**: Double-entry ledger with SHA256 signatures for each wallet movement
 - **Invoice Generation**: Automated PDF invoice creation and delivery
 - **Customer Management**: Comprehensive customer tracking and history
 - **WhatsApp Automation**: Flow-based automated messaging system
@@ -18,10 +20,12 @@ A production-ready WhatsApp Business Operating System with integrated Ozow payme
 - ✅ API key hashing with bcrypt
 - ✅ Rate limiting (per IP and per user)
 - ✅ HMAC webhook signature verification
+- ✅ Idempotent payment webhook processing using transaction keys
 - ✅ Input sanitization and validation
 - ✅ MongoDB injection protection
 - ✅ Helmet.js security headers
 - ✅ CORS configuration
+- ✅ Encrypted banking payout details at rest
 
 ### Analytics & Reporting
 - Real-time dashboard with revenue, orders, and customer metrics
@@ -88,7 +92,7 @@ chatcommerce-os/
 - Node.js 18+
 - MongoDB 7.0+
 - WhatsApp Business API access
-- Ozow merchant account
+- PayFast merchant account
 
 ### Installation
 

@@ -15,3 +15,11 @@ export const authLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
+
+export const webhookLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 120,
+  message: { success: false, message: 'Webhook rate limit exceeded.' },
+  standardHeaders: true,
+  legacyHeaders: false,
+});

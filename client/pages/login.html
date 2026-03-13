@@ -8,13 +8,15 @@
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/auth.css">
   <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
 </head>
 <body class="auth-page">
   <div class="auth-container">
-    <div class="auth-card">
+    <div class="auth-card pop-in">
       <div class="auth-logo">
-        <h1><i data-lucide="globe"></i> Ubuntu Market</h1>
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="auth-logo-img">
         <p>Accept payments on WhatsApp</p>
+        <a href="/" style="font-size:12px;color:var(--primary-dark);margin-top:4px;display:inline-block;">View plans &amp; pricing &rarr;</a>
       </div>
 
       <div class="auth-tabs">
@@ -32,22 +34,23 @@
           <input type="password" id="password" name="password" placeholder="••••••••" required>
         </div>
         <button type="submit" class="btn btn-primary btn-full" id="loginBtn">Sign In</button>
-        <div id="errorMsg" class="error-message" style="display:none"></div>
       </form>
     </div>
   </div>
 
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container"></div>
+
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/app.js"></script>
   <script>
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('loginBtn');
-      const errEl = document.getElementById('errorMsg');
       btn.disabled = true;
       btn.textContent = 'Signing in...';
-      errEl.style.display = 'none';
 
       try {
         const data = await api.post('/api/auth/login', {
@@ -56,10 +59,16 @@
         });
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
-        window.location.href = '/dashboard';
+        showToast('Signed in successfully!', 'success');
+
+        // Redirect unverified users to verification page
+        if (data.user && data.user.isVerified === false) {
+          setTimeout(() => { window.location.href = '/verify'; }, 1200);
+        } else {
+          setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+        }
       } catch (err) {
-        errEl.textContent = err.message;
-        errEl.style.display = 'block';
+        showToast(err.message || 'Invalid email or password. Please try again.', 'error');
       } finally {
         btn.disabled = false;
         btn.textContent = 'Sign In';

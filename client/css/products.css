@@ -70,6 +70,7 @@
 }
 
 .product-stock.low { color: var(--danger); }
+.product-stock.out { color: var(--danger); font-weight: 700; }
 
 .product-actions {
   display: flex;

@@ -1,5 +1,7 @@
 import Product from '../models/Product.js';
 import { uploadImage } from '../services/cloudinary.service.js';
+import { checkProductLimit } from '../services/subscription.service.js';
+import { ApiError } from '../errors/ApiError.js';
 
 export async function listProducts(req, res, next) {
   try {
@@ -42,6 +44,7 @@ export async function createProduct(req, res, next) {
       price: Number(price),
       category: category || 'General',
       stock: Number(stock) || 0,
+      isActive: Number(stock) > 0,
       image_url,
     });
 
@@ -62,6 +65,13 @@ export async function updateProduct(req, res, next) {
     if (category !== undefined) update.category = category;
     if (stock !== undefined) update.stock = Number(stock);
     if (isActive !== undefined) update.isActive = isActive;
+
+    if (stock !== undefined && Number(stock) <= 0) {
+      update.isActive = false;
+    }
+    if (stock !== undefined && Number(stock) > 0 && isActive === undefined) {
+      update.isActive = true;
+    }
 
     if (req.file) {
       const result = await uploadImage(req.file.buffer, 'products');

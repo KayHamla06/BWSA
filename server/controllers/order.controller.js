@@ -4,13 +4,31 @@ export async function listOrders(req, res, next) {
   try {
     const { status } = req.query;
     const filter = { userId: req.user.userId };
-    if (status) filter.status = status;
+    if (status) {
+      const normalized = String(status).toLowerCase();
+      if (normalized === 'approved') filter.status = 'paid';
+      else if (normalized === 'declined') filter.status = 'failed';
+      else filter.status = normalized;
+    }
 
     const orders = await Order.find(filter)
       .sort({ createdAt: -1 })
       .populate('productId', 'name price image_url');
 
-    res.json({ success: true, orders });
+    res.json({
+      success: true,
+      orders: orders.map((order) => ({
+        ...order.toObject(),
+        displayStatus:
+          order.status === 'paid'
+            ? 'APPROVED'
+            : order.status === 'failed'
+              ? 'DECLINED'
+              : order.status === 'delivered'
+                ? 'DELIVERED'
+                : 'PENDING',
+      })),
+    });
   } catch (error) {
     next(error);
   }
@@ -30,10 +48,16 @@ export async function getOrder(req, res, next) {
 
 export async function updateOrderStatus(req, res, next) {
   try {
-    const { status } = req.body;
-    const validStatuses = ['pending', 'paid', 'failed', 'cancelled', 'refunded'];
+    const requested = String(req.body.status || '').toUpperCase();
+    const statusMap = {
+      PENDING: 'pending',
+      APPROVED: 'paid',
+      DECLINED: 'failed',
+      DELIVERED: 'delivered',
+    };
+    const status = statusMap[requested];
 
-    if (!validStatuses.includes(status)) {
+    if (!status) {
       return res.status(400).json({ success: false, message: 'Invalid order status' });
     }
 

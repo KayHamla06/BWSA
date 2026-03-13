@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="/css/layout.css">
   <link rel="stylesheet" href="/css/dashboard.css">
   <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
 </head>
 <body>
   <div class="app-layout">
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
         <button class="sidebar-close" id="sidebarClose">&times;</button>
       </div>
       <nav class="sidebar-nav">
@@ -36,10 +37,14 @@
       </header>
 
       <div class="content-area">
-        <!-- Business Profile -->
         <div class="card">
           <h2 class="card-title">Business Profile</h2>
           <form id="profileForm">
+            <div class="form-group">
+              <label for="businessLogo">Business Logo</label>
+              <input type="file" id="businessLogo" name="logo" accept="image/png,image/jpeg">
+              <div id="businessLogoPreview" class="image-preview"></div>
+            </div>
             <div class="form-row">
               <div class="form-group">
                 <label for="businessName">Business Name</label>
@@ -62,33 +67,58 @@
           </form>
         </div>
 
-        <!-- Payment Settings -->
         <div class="card">
-          <h2 class="card-title"><i data-lucide="credit-card"></i> Payment Settings (Ozow)</h2>
-          <p class="card-subtitle">Connect your Ozow merchant account to receive payments directly to your bank.</p>
-          <form id="paymentSettingsForm">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="ozowMerchantId">Ozow Merchant ID</label>
-                <input type="text" id="ozowMerchantId" name="ozowMerchantId">
-              </div>
-              <div class="form-group">
-                <label for="ozowSiteCode">Ozow Site Code</label>
-                <input type="text" id="ozowSiteCode" name="ozowSiteCode">
-              </div>
+          <h2 class="card-title"><i data-lucide="credit-card"></i> Payment Routing</h2>
+          <p class="card-subtitle">Choose between direct PayFast settlement or Ubuntu Pay, where payments settle to the platform and you withdraw later.</p>
+          <div class="info-banner" id="paymentFlowHint">Ubuntu Pay is active. Customer funds will settle into your Ubuntu Pay balance.</div>
+          <div class="wallet-balance-strip" id="settingsWalletSummary">
+            <div>
+              <span class="wallet-balance-label">Available Balance</span>
+              <strong id="settingsAvailableBalance">R0.00</strong>
             </div>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="ozowApiKey">Ozow API Key</label>
-                <input type="password" id="ozowApiKey" name="ozowApiKey">
+            <div>
+              <span class="wallet-balance-label">Pending Balance</span>
+              <strong id="settingsPendingBalance">R0.00</strong>
+            </div>
+          </div>
+          <form id="paymentSettingsForm">
+            <div class="form-group">
+              <label for="paymentFlow">How should customer money flow?</label>
+              <select id="paymentFlow" name="paymentFlow" class="select-input">
+                <option value="ubuntu_pay">Ubuntu Pay account on this platform</option>
+                <option value="payfast_direct">Direct to my PayFast account</option>
+              </select>
+            </div>
+
+            <div id="payfastDirectFields" hidden>
+              <h3 class="form-section-title">Direct PayFast Account</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="payfastMerchantId">PayFast Merchant ID</label>
+                  <input type="text" id="payfastMerchantId" name="payfastMerchantId">
+                </div>
+                <div class="form-group">
+                  <label for="payfastMerchantKey">PayFast Merchant Key</label>
+                  <input type="password" id="payfastMerchantKey" name="payfastMerchantKey" placeholder="Leave blank to keep current key">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="payfastPassphrase">PayFast Passphrase</label>
+                  <input type="password" id="payfastPassphrase" name="payfastPassphrase" placeholder="Optional if your account uses one">
+                </div>
+                <div class="form-group">
+                  <label for="payfastReturnUrl">Return URL</label>
+                  <input type="url" id="payfastReturnUrl" name="payfastReturnUrl" placeholder="https://your-domain.com/payments">
+                </div>
               </div>
               <div class="form-group">
-                <label for="ozowPrivateKey">Ozow Private Key</label>
-                <input type="password" id="ozowPrivateKey" name="ozowPrivateKey">
+                <label for="payfastCancelUrl">Cancel URL</label>
+                <input type="url" id="payfastCancelUrl" name="payfastCancelUrl" placeholder="https://your-domain.com/payments">
               </div>
             </div>
 
-            <h3 class="form-section-title">Bank Details</h3>
+            <h3 class="form-section-title">Ubuntu Pay Withdrawal Details</h3>
             <div class="form-row">
               <div class="form-group">
                 <label for="bankName">Bank Name</label>
@@ -114,9 +144,52 @@
                 </select>
               </div>
             </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="payshapId">PayShap ID or Number</label>
+                <input type="text" id="payshapId" name="payshapId">
+              </div>
+              <div class="form-group">
+                <label for="capitecNumber">Capitec Number</label>
+                <input type="text" id="capitecNumber" name="capitecNumber">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="capitecSurname">Capitec Surname</label>
+                <input type="text" id="capitecSurname" name="capitecSurname">
+              </div>
+              <div class="form-group">
+                <label for="qrPaymentDetails">QR Payment Details</label>
+                <textarea id="qrPaymentDetails" name="qrPaymentDetails" rows="2" placeholder="Paste your QR payment reference or instructions"></textarea>
+              </div>
+            </div>
             <button type="submit" class="btn btn-primary">Save Payment Settings</button>
-            <div id="paymentStatus" class="status-badge" style="display:none"></div>
+            <div id="paymentStatus" class="status-badge" hidden></div>
           </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Coupons</h2>
+          <p class="card-subtitle">Create discount codes that are validated during payment.</p>
+          <form id="couponForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="couponCode">Coupon Code</label>
+                <input type="text" id="couponCode" name="couponCode" placeholder="SAVE10">
+              </div>
+              <div class="form-group">
+                <label for="discountPercentage">Discount Percentage</label>
+                <input type="number" id="discountPercentage" name="discountPercentage" min="1" max="100">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="expirationDate">Expiration Date</label>
+              <input type="date" id="expirationDate" name="expirationDate">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Coupon</button>
+          </form>
+          <div id="couponList" class="stack-list"></div>
         </div>
       </div>
     </main>
@@ -124,6 +197,7 @@
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
   <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
   <script src="/js/app.js"></script>
   <script src="/js/settings.js"></script>
 </body>

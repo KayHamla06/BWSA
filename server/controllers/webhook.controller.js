@@ -4,9 +4,14 @@ import Product from '../models/Product.js';
 import Order from '../models/Order.js';
 import Payment from '../models/Payment.js';
 import Customer from '../models/Customer.js';
+import SellerPayment from '../models/SellerPayment.js';
 import { whatsappService } from '../services/whatsapp.service.js';
-import { ozowService } from '../services/ozow.service.js';
+import { payfastService } from '../services/payfast.service.js';
+import { paymentService } from '../services/payment.service.js';
+import { receiptService } from '../services/receipt.service.js';
 import { broadcast } from '../services/notification.service.js';
+import TransactionLog from '../models/TransactionLog.js';
+import { auditService } from '../services/audit.service.js';
 
 // WhatsApp webhook verification (GET)
 export async function verifyWhatsApp(req, res) {
@@ -23,8 +28,8 @@ export async function verifyWhatsApp(req, res) {
 // WhatsApp incoming messages (POST)
 export async function handleWhatsApp(req, res) {
   try {
-    // Verify signature in production
-    if (process.env.NODE_ENV === 'production' && process.env.WHATSAPP_APP_SECRET) {
+    // Verify signature whenever an app secret is configured.
+    if (process.env.WHATSAPP_APP_SECRET) {
       const signature = req.headers['x-hub-signature-256'];
       if (!signature) return res.status(401).json({ error: 'Missing signature' });
 
@@ -33,7 +38,7 @@ export async function handleWhatsApp(req, res) {
         .update(req.rawBody || JSON.stringify(req.body))
         .digest('hex');
 
-      if (!crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
+      if (signature.length !== expected.length || !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))) {
         return res.status(401).json({ error: 'Invalid signature' });
       }
     }
@@ -65,18 +70,37 @@ export async function handleWhatsApp(req, res) {
 
     if (!seller) return;
 
-    // Handle "menu" command
-    if (text === 'menu' || text === 'hi' || text === 'hello' || text === 'shop') {
-      const products = await Product.find({ userId: seller._id, isActive: true, stock: { $gt: 0 } })
-        .sort({ soldCount: -1 })
-        .limit(10);
+    const products = await Product.find({ userId: seller._id, isActive: true, stock: { $gt: 0 } })
+      .sort({ soldCount: -1 })
+      .limit(10);
 
+    // Handle menu/catalog/help commands
+    if (['menu', 'catalog', 'hi', 'hello', 'shop'].includes(text)) {
       if (products.length === 0) {
         await whatsappService.sendTextMessage(from, `Welcome to ${seller.businessName}! 🏪\n\nOur store is being updated. Please check back soon!`);
         return;
       }
 
       await whatsappService.sendProductMenu(from, products, seller.businessName);
+      return;
+    }
+
+    if (text === 'help') {
+      await whatsappService.sendTextMessage(
+        from,
+        'Commands:\n- menu / catalog\n- buy 1 (buy item number)\n- help'
+      );
+      return;
+    }
+
+    if (text.startsWith('buy ')) {
+      const index = Number(text.replace('buy', '').trim());
+      if (!Number.isInteger(index) || index < 1 || index > products.length) {
+        await whatsappService.sendTextMessage(from, 'Invalid product number. Send "menu" to view available products.');
+        return;
+      }
+      const selected = products[index - 1];
+      await whatsappService.sendProductDetails(from, selected);
       return;
     }
 
@@ -111,10 +135,14 @@ export async function handleWhatsApp(req, res) {
           userId: seller._id,
           name: value.contacts?.[0]?.profile?.name || from,
           whatsappNumber: from,
+          phoneNumber: from,
+          lastContactDate: new Date(),
         });
+      } else {
+        customer.lastContactDate = new Date();
+        await customer.save();
       }
 
-      // Create order
       const reference = `ORD-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
       const order = await Order.create({
         userId: seller._id,
@@ -123,13 +151,16 @@ export async function handleWhatsApp(req, res) {
         customerPhone: from,
         amount: product.price,
         paymentReference: reference,
-        productSnapshot: { name: product.name, price: product.price, image_url: product.image_url },
+        productSnapshot: { name: product.name, description: product.description || '', price: product.price, image_url: product.image_url },
       });
 
-      // Create Ozow payment
-      const payResult = await ozowService.createPaymentRequest(seller._id, product.price, reference, {
+      const payResult = await payfastService.createPaymentRequest(seller._id, product.price, reference, {
         name: customer.name,
         phone: from,
+      }, {
+        itemName: product.name,
+        description: product.description || product.name,
+        orderId: order._id.toString(),
       });
 
       if (payResult.success) {
@@ -142,7 +173,12 @@ export async function handleWhatsApp(req, res) {
           customerId: customer._id,
           amount: product.price,
           paymentReference: reference,
+          paymentMethod: 'payfast',
+          paymentProvider: 'payfast',
+          paymentFlow: payResult.data.paymentFlow,
+          destinationType: payResult.data.paymentFlow === 'payfast_direct' ? 'seller_direct' : 'platform_wallet',
           paymentUrl: payResult.data.redirectUrl,
+          withdrawalEligible: payResult.data.paymentFlow === 'ubuntu_pay',
         });
 
         await whatsappService.sendPaymentLink(from, product.name, product.price, payResult.data.redirectUrl);
@@ -169,25 +205,71 @@ export async function handleWhatsApp(req, res) {
   }
 }
 
-// Ozow payment webhook (POST)
-export async function handleOzowWebhook(req, res) {
+async function verifyPayfastWebhook(payment, body) {
+  const sellerSettings = await SellerPayment.findOne({ userId: payment.userId });
+  const passphrase = payment.paymentFlow === 'payfast_direct'
+    ? sellerSettings?.payfastPassphrase || ''
+    : process.env.PAYFAST_PASSPHRASE || '';
+
+  const payload = { ...body };
+  delete payload.signature;
+
+  const expected = payfastService.buildSignature(payload, passphrase);
+  return String(body.signature || '').trim().toLowerCase() === expected;
+}
+
+export async function handlePayfastWebhook(req, res) {
   try {
     const body = req.body;
-    const transactionId = body.TransactionId || body.transactionId;
-    const reference = body.TransactionReference || body.transactionReference;
-    const status = (body.Status || body.status || '').toUpperCase();
-    const amount = body.Amount || body.amount;
+    const reference = body.m_payment_id || body.payment_id || body.TransactionReference;
+    const paymentTransactionId = body.pf_payment_id || body.payment_id || `pf-${Date.now()}`;
+    const gatewayStatus = body.payment_status || body.status || body.Status;
+    const mappedStatus = paymentService.mapGatewayStatus(gatewayStatus);
+    const amount = Number(body.amount_gross || body.amount || 0);
 
-    // Find the order
     const order = await Order.findOne({ paymentReference: reference });
     const payment = await Payment.findOne({ paymentReference: reference });
+    const sellerId = order?.userId || payment?.userId;
 
-    if (status === 'COMPLETE') {
-      if (order) {
+    if (!order || !payment || !sellerId) {
+      return res.status(404).json({ success: false, message: 'Order/payment not found' });
+    }
+
+    const isValidSignature = await verifyPayfastWebhook(payment, body);
+    if (!isValidSignature) {
+      return res.status(401).json({ success: false, message: 'Invalid payment webhook signature' });
+    }
+
+    // Idempotency key: payment_transaction_id
+    const existingTransaction = await TransactionLog.findOne({ transactionId: paymentTransactionId });
+    if (existingTransaction) {
+      return res.json({ success: true, duplicate: true });
+    }
+
+    try {
+      await paymentService.recordTransactionLog({
+        transactionId: paymentTransactionId,
+        sellerId,
+        customerPhone: order.customerPhone,
+        productId: order.productId,
+        orderId: order._id,
+        amount: Number(order.amount || amount),
+        status: mappedStatus,
+        rawPayload: body,
+        eventSource: 'payfast',
+      });
+    } catch (logError) {
+      if (logError?.code === 11000) {
+        return res.json({ success: true, duplicate: true });
+      }
+      throw logError;
+    }
+
+    if (mappedStatus === 'APPROVED') {
+      if (payment.status !== 'completed') {
         order.status = 'paid';
         await order.save();
 
-        // Update product sold count and stock
         const product = await Product.findById(order.productId);
         if (product) {
           product.soldCount += 1;
@@ -196,50 +278,109 @@ export async function handleOzowWebhook(req, res) {
           await product.save();
         }
 
-        // Update customer stats
         const customer = await Customer.findById(order.customerId);
         if (customer) {
           customer.totalSpent += order.amount;
           customer.orderCount += 1;
+          customer.totalOrders += 1;
           customer.lastOrderDate = new Date();
+          customer.lastContactDate = new Date();
           await customer.save();
         }
+      }
 
-        // Send WhatsApp confirmation
-        await whatsappService.sendPaymentConfirmation(order.customerPhone, order.amount, reference);
+      payment.status = 'completed';
+      payment.transactionId = paymentTransactionId;
+      payment.paidAt = new Date();
+      payment.webhookData = body;
+      payment.failureReason = null;
 
-        // Real-time dashboard notification
-        broadcast(order.userId.toString(), 'sale', {
-          product: order.productSnapshot?.name || 'Product',
+      if (payment.paymentFlow === 'ubuntu_pay' && !payment.walletCreditedAt) {
+        await paymentService.postPaymentCredit({
+          userId: order.userId,
+          transactionId: `LGR-${paymentTransactionId}`,
           amount: order.amount,
-          customer: order.customerPhone,
-          reference,
+          reference: reference || payment.paymentReference,
         });
+        payment.walletCreditedAt = new Date();
       }
 
-      if (payment) {
-        payment.status = 'completed';
-        payment.transactionId = transactionId;
-        payment.paidAt = new Date();
-        payment.webhookData = body;
-        await payment.save();
-      }
-    } else if (status === 'ERROR' || status === 'CANCELLED') {
-      if (order) {
-        order.status = 'failed';
-        await order.save();
-      }
-      if (payment) {
-        payment.status = 'failed';
-        payment.failureReason = status;
-        payment.webhookData = body;
-        await payment.save();
-      }
+      await payment.save();
+
+      await auditService.logFinancialAction({
+        userId: order.userId,
+        actionType: 'payment_confirmation',
+        description: `Payment confirmed for ${reference} (${paymentTransactionId})`,
+        ipAddress: req.ip,
+      });
+
+      await whatsappService.sendPaymentConfirmation(order.customerPhone, order.amount, reference);
+
+      setImmediate(async () => {
+        try {
+          const seller = await User.findById(order.userId);
+          if (!seller) return;
+
+          const { pdfUrl, receiptId } = await receiptService.generateReceiptAndStore({
+            seller,
+            order,
+            payment,
+            paymentStatus: mappedStatus,
+            transactionId: paymentTransactionId,
+          });
+
+          await whatsappService.sendDocumentMessage(
+            order.customerPhone,
+            pdfUrl,
+            `${receiptId}.pdf`,
+            `Receipt for order ${order.paymentReference}`
+          );
+          await whatsappService.sendTextMessage(order.customerPhone, `Your receipt is ready: ${pdfUrl}`);
+
+          if (seller.whatsappNumber) {
+            await whatsappService.sendDocumentMessage(
+              seller.whatsappNumber,
+              pdfUrl,
+              `${receiptId}.pdf`,
+              `Receipt generated for customer ${order.customerPhone}`
+            );
+            await whatsappService.sendTextMessage(seller.whatsappNumber, `New receipt generated: ${pdfUrl}`);
+          }
+        } catch (receiptError) {
+          console.error('Receipt async processing error:', receiptError.message);
+        }
+      });
+
+      broadcast(order.userId.toString(), 'sale', {
+        product: order.productSnapshot?.name || 'Product',
+        amount: order.amount,
+        customer: order.customerPhone,
+        reference,
+        paymentFlow: payment.paymentFlow,
+      });
+    } else {
+      order.status = 'failed';
+      await order.save();
+
+      payment.status = 'failed';
+      payment.failureReason = mappedStatus;
+      payment.webhookData = body;
+      payment.transactionId = paymentTransactionId;
+      await payment.save();
+
+      await auditService.logFinancialAction({
+        userId: order.userId,
+        actionType: 'wallet_update',
+        description: `Payment failed for ${reference} (${paymentTransactionId})`,
+        ipAddress: req.ip,
+      });
     }
 
     res.json({ success: true });
   } catch (error) {
-    console.error('Ozow webhook error:', error);
+    console.error('PayFast webhook error:', error);
     res.status(500).json({ success: false });
   }
 }
+
+export const handleOzowWebhook = handlePayfastWebhook;

@@ -12,13 +12,14 @@ const OrderSchema = new Schema(
     currency: { type: String, default: 'ZAR' },
     status: {
       type: String,
-      enum: ['pending', 'paid', 'failed', 'cancelled', 'refunded'],
+      enum: ['pending', 'paid', 'failed', 'cancelled', 'refunded', 'delivered'],
       default: 'pending',
     },
     paymentReference: { type: String, default: null },
     paymentUrl: { type: String, default: null },
     productSnapshot: {
       name: String,
+      description: String,
       price: Number,
       image_url: String,
     },
