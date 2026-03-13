@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <button class="sidebar-close" id="sidebarClose">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="/products" class="nav-item"><span class="nav-icon"><i data-lucide="package"></i></span> Products</a>
+        <a href="/orders" class="nav-item"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
+        <a href="/payments" class="nav-item"><span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments</a>
+        <a href="/customers" class="nav-item active"><span class="nav-icon"><i data-lucide="users"></i></span> Customers</a>
+        <a href="/settings" class="nav-item"><span class="nav-icon"><i data-lucide="settings"></i></span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Customers</h1>
+      </header>
+
+      <div class="content-area">
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>WhatsApp</th>
+                  <th>Orders</th>
+                  <th>Total Spent</th>
+                  <th>Last Order</th>
+                </tr>
+              </thead>
+              <tbody id="customersBody">
+                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/customers.js"></script>
+</body>
+</html>

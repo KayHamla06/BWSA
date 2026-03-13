@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <button class="sidebar-close" id="sidebarClose">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard
+        </a>
+        <a href="/products" class="nav-item" data-page="products">
+          <span class="nav-icon"><i data-lucide="package"></i></span> Products
+        </a>
+        <a href="/orders" class="nav-item" data-page="orders">
+          <span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders
+        </a>
+        <a href="/payments" class="nav-item" data-page="payments">
+          <span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments
+        </a>
+        <a href="/customers" class="nav-item" data-page="customers">
+          <span class="nav-icon"><i data-lucide="users"></i></span> Customers
+        </a>
+        <a href="/settings" class="nav-item" data-page="settings">
+          <span class="nav-icon"><i data-lucide="settings"></i></span> Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Dashboard</h1>
+        <div class="topbar-user" id="topbarUser"></div>
+      </header>
+
+      <div class="content-area">
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Revenue</span>
+              <span class="stat-value" id="totalRevenue">R0.00</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="shopping-cart"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Orders Today</span>
+              <span class="stat-value" id="ordersToday">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="users"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Customers</span>
+              <span class="stat-value" id="totalCustomers">0</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i data-lucide="package"></i></div>
+            <div class="stat-info">
+              <span class="stat-label">Total Orders</span>
+              <span class="stat-value" id="totalOrders">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="card">
+          <h2 class="card-title">Best Selling Products</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Sales</th>
+                  <th>Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="topProductsBody">
+                <tr><td colspan="3" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="card">
+          <h2 class="card-title">Recent Orders</h2>
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody id="recentOrdersBody">
+                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/dashboard.js"></script>
+</body>
+</html>

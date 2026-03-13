@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-logo">
+        <h1><i data-lucide="globe"></i> Ubuntu Market</h1>
+        <p>Start accepting payments in minutes</p>
+      </div>
+
+      <div class="auth-tabs">
+        <a href="/login" class="auth-tab">Sign In</a>
+        <a href="/register" class="auth-tab active">Sign Up</a>
+      </div>
+
+      <form id="registerForm" class="auth-form">
+        <div class="form-group">
+          <label for="businessName">Business Name</label>
+          <input type="text" id="businessName" name="businessName" placeholder="Your Business" required>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="phone">WhatsApp Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+27 123 456 7890" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Min 8 characters" required minlength="8">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="registerBtn">Create Account</button>
+        <div id="errorMsg" class="error-message" style="display:none"></div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script>
+    document.getElementById('registerForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('registerBtn');
+      const errEl = document.getElementById('errorMsg');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      errEl.style.display = 'none';
+
+      try {
+        const data = await api.post('/api/auth/register', {
+          businessName: document.getElementById('businessName').value,
+          name: document.getElementById('businessName').value,
+          email: document.getElementById('email').value,
+          phone: document.getElementById('phone').value,
+          password: document.getElementById('password').value,
+          plan: 'free',
+        });
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        window.location.href = '/dashboard';
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>

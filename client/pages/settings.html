@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2><i data-lucide="globe"></i> Ubuntu Market</h2>
+        <button class="sidebar-close" id="sidebarClose">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="/products" class="nav-item"><span class="nav-icon"><i data-lucide="package"></i></span> Products</a>
+        <a href="/orders" class="nav-item"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
+        <a href="/payments" class="nav-item"><span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments</a>
+        <a href="/customers" class="nav-item"><span class="nav-icon"><i data-lucide="users"></i></span> Customers</a>
+        <a href="/settings" class="nav-item active"><span class="nav-icon"><i data-lucide="settings"></i></span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Settings</h1>
+      </header>
+
+      <div class="content-area">
+        <!-- Business Profile -->
+        <div class="card">
+          <h2 class="card-title">Business Profile</h2>
+          <form id="profileForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="businessName">Business Name</label>
+                <input type="text" id="businessName" name="businessName">
+              </div>
+              <div class="form-group">
+                <label for="whatsappNumber">WhatsApp Number</label>
+                <input type="tel" id="whatsappNumber" name="whatsappNumber">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="businessDescription">Business Description</label>
+              <textarea id="businessDescription" name="businessDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="supportEmail">Support Email</label>
+              <input type="email" id="supportEmail" name="supportEmail">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+          </form>
+        </div>
+
+        <!-- Payment Settings -->
+        <div class="card">
+          <h2 class="card-title"><i data-lucide="credit-card"></i> Payment Settings (Ozow)</h2>
+          <p class="card-subtitle">Connect your Ozow merchant account to receive payments directly to your bank.</p>
+          <form id="paymentSettingsForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ozowMerchantId">Ozow Merchant ID</label>
+                <input type="text" id="ozowMerchantId" name="ozowMerchantId">
+              </div>
+              <div class="form-group">
+                <label for="ozowSiteCode">Ozow Site Code</label>
+                <input type="text" id="ozowSiteCode" name="ozowSiteCode">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="ozowApiKey">Ozow API Key</label>
+                <input type="password" id="ozowApiKey" name="ozowApiKey">
+              </div>
+              <div class="form-group">
+                <label for="ozowPrivateKey">Ozow Private Key</label>
+                <input type="password" id="ozowPrivateKey" name="ozowPrivateKey">
+              </div>
+            </div>
+
+            <h3 class="form-section-title">Bank Details</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bankName">Bank Name</label>
+                <input type="text" id="bankName" name="bankName">
+              </div>
+              <div class="form-group">
+                <label for="accountHolder">Account Holder</label>
+                <input type="text" id="accountHolder" name="accountHolder">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="accountNumber">Account Number</label>
+                <input type="text" id="accountNumber" name="accountNumber">
+              </div>
+              <div class="form-group">
+                <label for="accountType">Account Type</label>
+                <select id="accountType" name="accountType" class="select-input">
+                  <option value="">Select...</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="savings">Savings</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Payment Settings</button>
+            <div id="paymentStatus" class="status-badge" style="display:none"></div>
+          </form>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/settings.js"></script>
+</body>
+</html>
