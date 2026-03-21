@@ -67,7 +67,7 @@ app.use(helmet({
       scriptSrc: ["'self'", "https://unpkg.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
-      connectSrc: ["'self'"],
+      connectSrc: ["'self'", "https://unpkg.com"],
       frameAncestors: ["'none'"],
       baseUri: ["'self'"],
       formAction: ["'self'", "https://sandbox.payfast.co.za", "https://www.payfast.co.za"],
