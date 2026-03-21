@@ -14,7 +14,7 @@ export const PLAN_CONFIG = {
     transactionFeePercent: 4.0,
     whatsappMessages:      50,
     features:              ['catalog', 'payment_links', 'basic_receipts'],
-    trialDays:             0,
+    trialDays:             14,
     highlight:             false,
     badge:                 null,
     color:                 '#6b7280',
@@ -193,13 +193,50 @@ export async function calculateTransactionFee(userId, amount) {
   };
 }
 
+// ── Trial status ──────────────────────────────────────────────────────────────
+export async function getTrialStatus(userId) {
+  const sub = await getOrCreateSubscription(userId);
+  const now = new Date();
+
+  // User has paid — trial doesn't matter
+  if (sub.status === 'active') {
+    return { trialActive: false, trialExpired: false, daysLeft: 0, needsPayment: false };
+  }
+
+  const trialEnd = sub.trialEndDate ? new Date(sub.trialEndDate) : null;
+  if (!trialEnd) {
+    // No trial end date — treat as expired
+    return { trialActive: false, trialExpired: true, daysLeft: 0, trialEndsAt: null, needsPayment: true };
+  }
+
+  const msLeft  = trialEnd.getTime() - now.getTime();
+  const daysLeft = Math.max(0, Math.ceil(msLeft / (24 * 60 * 60 * 1000)));
+  const expired  = daysLeft <= 0;
+
+  // Auto-mark as expired in the DB if still showing 'trial'
+  if (expired && sub.status === 'trial') {
+    await UserSubscription.updateOne({ userId }, { $set: { status: 'expired' } });
+  }
+
+  return {
+    trialActive:  !expired,
+    trialExpired: expired,
+    daysLeft,
+    trialEndsAt:  trialEnd,
+    warning:      !expired && daysLeft <= 3,
+    needsPayment: expired,
+    planKey:      sub.planKey,
+  };
+}
+
 // ── Usage summary (for dashboard / API) ──────────────────────────────────────
 export async function getUsageSummary(userId) {
-  const [productCheck, customerCheck, messageCheck, planConfig] = await Promise.all([
+  const [productCheck, customerCheck, messageCheck, planConfig, trialStatus] = await Promise.all([
     checkProductLimit(userId),
     checkCustomerLimit(userId),
     checkMessageLimit(userId, 0),
     getUserPlanConfig(userId),
+    getTrialStatus(userId),
   ]);
 
   return {
@@ -207,8 +244,12 @@ export async function getUsageSummary(userId) {
     products:    productCheck,
     customers:   customerCheck,
     messages:    messageCheck,
-    trialActive: planConfig.subscription?.status === 'trial',
-    trialEndsAt: planConfig.subscription?.trialEndDate || null,
+    trialActive: trialStatus.trialActive,
+    trialExpired: trialStatus.trialExpired,
+    trialDaysLeft: trialStatus.daysLeft,
+    trialWarning: trialStatus.warning,
+    trialEndsAt: trialStatus.trialEndsAt,
+    needsPayment: trialStatus.needsPayment,
   };
 }
 
@@ -216,13 +257,7 @@ export async function getUsageSummary(userId) {
 export async function createDefaultSubscription(userId, planKey = 'payg') {
   const config = getPlanConfig(planKey);
   const now    = new Date();
-  let trialEndDate = null;
-  let status       = 'payg';
-
-  if (planKey !== 'payg' && config.trialDays > 0) {
-    trialEndDate = new Date(now.getTime() + config.trialDays * 24 * 60 * 60 * 1000);
-    status       = 'trial';
-  }
+  const trialEndDate = new Date(now.getTime() + config.trialDays * 24 * 60 * 60 * 1000);
 
   return UserSubscription.findOneAndUpdate(
     { userId },
@@ -230,8 +265,8 @@ export async function createDefaultSubscription(userId, planKey = 'payg') {
       $setOnInsert: {
         userId,
         planKey,
-        status,
-        trialStartDate: planKey !== 'payg' ? now : null,
+        status: 'trial',
+        trialStartDate: now,
         trialEndDate,
         periodStart: now,
       },
@@ -264,6 +299,22 @@ export async function changePlan(userId, newPlanKey) {
   return UserSubscription.findOneAndUpdate({ userId }, { $set: update }, { new: true, upsert: true });
 }
 
+// ── Feature check ─────────────────────────────────────────────────────────────
+export async function hasFeature(userId, featureKey) {
+  const { features } = await getUserPlanConfig(userId);
+  return features.includes(featureKey);
+}
+
+export async function getUserFeatures(userId) {
+  const config = await getUserPlanConfig(userId);
+  return {
+    planKey:  config.planKey,
+    planName: config.name,
+    features: config.features,
+    featureLabels: config.features.map(f => ({ key: f, label: FEATURE_LABELS[f] || f })),
+  };
+}
+
 export const subscriptionService = {
   PLAN_CONFIG,
   FEATURE_LABELS,
@@ -278,4 +329,7 @@ export const subscriptionService = {
   getUsageSummary,
   createDefaultSubscription,
   changePlan,
+  hasFeature,
+  getUserFeatures,
+  getTrialStatus,
 };

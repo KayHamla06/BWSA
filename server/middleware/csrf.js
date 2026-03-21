@@ -5,7 +5,7 @@ export function csrfProtection(req, res, next) {
   if (!isStateChanging) return next();
 
   // Webhooks are machine-to-machine and should not use browser CSRF checks.
-  if (req.path.startsWith('/api/webhooks') || req.path === '/webhook' || req.path === '/payment/webhook') {
+  if (req.path.startsWith('/api/webhooks') || req.path === '/webhook' || req.path.startsWith('/payment/webhook')) {
     return next();
   }
 

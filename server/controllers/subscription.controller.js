@@ -5,7 +5,10 @@ import {
   getUsageSummary,
   changePlan,
   createDefaultSubscription,
+  getUserFeatures,
 } from '../services/subscription.service.js';
+import { createSubscriptionPayment } from '../services/payfast.service.js';
+import User from '../models/User.js';
 import { ApiError } from '../errors/ApiError.js';
 
 // GET /api/subscription/plans — public plan list
@@ -56,6 +59,52 @@ export async function getUsage(req, res, next) {
   try {
     const usage = await getUsageSummary(req.user.userId);
     res.json({ success: true, usage });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// GET /api/subscription/features — user's allowed features for frontend gating
+export async function getFeatures(req, res, next) {
+  try {
+    const features = await getUserFeatures(req.user.userId);
+    res.json({ success: true, ...features });
+  } catch (error) {
+    next(error);
+  }
+}
+
+// POST /api/subscription/pay — generate PayFast payment URL for a plan
+export async function payForSubscription(req, res, next) {
+  try {
+    const { planKey } = req.body;
+    if (!planKey || !PLAN_CONFIG[planKey]) {
+      throw ApiError.badRequest('Invalid plan. Choose from: starter, business, pro');
+    }
+
+    const plan = PLAN_CONFIG[planKey];
+    if (plan.price <= 0) {
+      throw ApiError.badRequest('This plan is free. No payment required.');
+    }
+
+    const user = await User.findById(req.user.userId).select('name email');
+    if (!user) throw ApiError.notFound('User not found');
+
+    const reference = `SUB-${req.user.userId}-${planKey}-${Date.now()}`;
+    const result = createSubscriptionPayment(user, planKey, plan.name, plan.price, reference);
+
+    if (!result.success) {
+      throw ApiError.internal(result.error || 'Failed to create payment');
+    }
+
+    res.json({
+      success: true,
+      redirectUrl: result.data.redirectUrl,
+      reference: result.data.reference,
+      planKey,
+      planName: plan.name,
+      amount: plan.price,
+    });
   } catch (error) {
     next(error);
   }

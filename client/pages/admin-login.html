@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <style>
+    .auth-page {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    }
+    .auth-badge {
+      display: inline-block;
+      background: rgba(37, 211, 102, 0.15);
+      color: var(--primary);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+    }
+    .auth-logo p { color: var(--text-secondary); }
+  </style>
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card pop-in">
+      <div class="auth-logo">
+        <img src="/assets/logo.png" alt="Ubuntu Market logo" class="auth-logo-img">
+        <span class="auth-badge">Admin Portal</span>
+        <p>Platform Administration</p>
+      </div>
+
+      <form id="adminLoginForm" class="auth-form">
+        <div class="form-group">
+          <label for="email">Admin Email</label>
+          <input type="email" id="email" name="email" placeholder="admin@ubuntumarket.co.za" required>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="adminLoginBtn">Sign In to Admin</button>
+      </form>
+    </div>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/toast.js"></script>
+  <script>
+    // Redirect if already authenticated as admin
+    (function () {
+      const token = localStorage.getItem('adminToken');
+      if (token) {
+        window.location.href = '/admin/dashboard';
+      }
+    })();
+
+    document.getElementById('adminLoginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('adminLoginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+
+      try {
+        const res = await fetch('/api/admin/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('email').value,
+            password: document.getElementById('password').value,
+          }),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Login failed');
+
+        localStorage.setItem('adminToken', data.token);
+        localStorage.setItem('adminUser', JSON.stringify(data.admin));
+        showToast('Welcome, Admin!', 'success');
+        setTimeout(() => { window.location.href = '/admin/dashboard'; }, 800);
+      } catch (err) {
+        showToast(err.message || 'Invalid credentials', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In to Admin';
+      }
+    });
+  </script>
+</body>
+</html>

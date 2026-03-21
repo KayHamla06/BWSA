@@ -14,8 +14,8 @@ const UserSchema = new Schema(
     logo: { type: String, default: null },
     plan: {
       type: String,
-      enum: ['free', 'basic', 'pro', 'enterprise', 'payg', 'r100', 'r500'],
-      default: 'free',
+      enum: ['payg', 'starter', 'business', 'pro', 'free', 'basic', 'enterprise', 'r100', 'r500'],
+      default: 'payg',
     },
     payoutInfo: {
       bankName: String,
@@ -35,6 +35,7 @@ const UserSchema = new Schema(
       enum: ['active', 'suspended', 'inactive'],
       default: 'active',
     },
+    suspensionReason: { type: String, default: null },
   },
   { timestamps: true }
 );

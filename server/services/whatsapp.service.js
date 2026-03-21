@@ -118,7 +118,7 @@ export async function sendProductDetails(toPhone, product) {
 }
 
 export async function sendPaymentLink(toPhone, productName, amount, paymentUrl) {
-  const message = `🛍️ *Order Confirmation*\n━━━━━━━━━━━━━━━\n\nProduct: *${productName}*\nPrice: *R${Number(amount).toFixed(2)}*\n\nClick below to pay securely:\n${paymentUrl}\n\n💳 Powered by Ozow`;
+  const message = `🛍️ *Order Confirmation*\n━━━━━━━━━━━━━━━\n\nProduct: *${productName}*\nPrice: *R${Number(amount).toFixed(2)}*\n\nClick below to pay securely:\n${paymentUrl}\n\n💳 Powered by PayFast`;
   return sendTextMessage(toPhone, message);
 }
 

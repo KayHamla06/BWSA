@@ -12,7 +12,7 @@ const UserSubscriptionSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ['active', 'trial', 'suspended', 'cancelled'],
+      enum: ['payg', 'active', 'trial', 'expired', 'suspended', 'cancelled'],
       default: 'payg',
     },
     trialStartDate:   { type: Date, default: null },

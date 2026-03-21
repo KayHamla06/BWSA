@@ -12,27 +12,31 @@
 </head>
 <body>
   <div class="app-layout">
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
       <div class="sidebar-header">
         <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
-        <button class="sidebar-close" id="sidebarClose">&times;</button>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&times;</button>
       </div>
       <nav class="sidebar-nav">
         <a href="/dashboard" class="nav-item"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
         <a href="/products" class="nav-item"><span class="nav-icon"><i data-lucide="package"></i></span> Products</a>
-        <a href="/orders" class="nav-item"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
+        <a href="/orders" class="nav-item" data-feature="order_tracking"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
         <a href="/payments" class="nav-item"><span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments</a>
         <a href="/customers" class="nav-item"><span class="nav-icon"><i data-lucide="users"></i></span> Customers</a>
         <a href="/settings" class="nav-item active"><span class="nav-icon"><i data-lucide="settings"></i></span> Settings</a>
       </nav>
       <div class="sidebar-footer">
         <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+        <div class="powered-by-bubble">
+          <span>Powered by Bubble</span>
+          <img src="/assets/Bubble_Logo.png" alt="Bubble" class="bubble-logo">
+        </div>
       </div>
     </aside>
 
     <main class="main-content">
       <header class="topbar">
-        <button class="hamburger" id="hamburgerBtn"><i data-lucide="menu"></i></button>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
         <h1 class="page-title">Settings</h1>
       </header>
 

@@ -1,7 +1,10 @@
 import crypto from 'crypto';
 
 function resolveEncryptionKey() {
-  const configured = process.env.BANK_ENCRYPTION_KEY || process.env.JWT_SECRET || 'ubuntu-market-default-key';
+  const configured = process.env.BANK_ENCRYPTION_KEY || process.env.JWT_SECRET;
+  if (!configured) {
+    throw new Error('BANK_ENCRYPTION_KEY or JWT_SECRET must be set for encryption');
+  }
   return crypto.createHash('sha256').update(String(configured)).digest();
 }
 

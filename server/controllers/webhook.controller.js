@@ -62,7 +62,8 @@ export async function handleWhatsApp(req, res) {
     const phoneNumberId = value.metadata?.phone_number_id;
 
     // Find the seller whose whatsappNumber matches, or use the platform default
-    let seller = await User.findOne({ whatsappNumber: { $regex: phoneNumberId?.slice(-8) || 'none' } });
+    const phoneSuffix = (phoneNumberId || '').slice(-8).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') || 'none';
+    let seller = await User.findOne({ whatsappNumber: { $regex: `${phoneSuffix}$` } });
     if (!seller) {
       // Fallback: find first active seller (for single-seller setup)
       seller = await User.findOne({ status: 'active' }).sort({ createdAt: 1 });
@@ -210,6 +211,11 @@ async function verifyPayfastWebhook(payment, body) {
   const passphrase = payment.paymentFlow === 'payfast_direct'
     ? sellerSettings?.payfastPassphrase || ''
     : process.env.PAYFAST_PASSPHRASE || '';
+
+  if (!passphrase) {
+    console.error('PayFast passphrase not configured for verification');
+    return false;
+  }
 
   const payload = { ...body };
   delete payload.signature;
@@ -384,3 +390,86 @@ export async function handlePayfastWebhook(req, res) {
 }
 
 export const handleOzowWebhook = handlePayfastWebhook;
+
+// ── Subscription Payment Webhook (PayFast IPN for plan subscriptions) ──
+export async function handleSubscriptionWebhook(req, res) {
+  try {
+    const body = req.body;
+    const reference = body.m_payment_id || '';
+    const paymentTransactionId = body.pf_payment_id || `pf-sub-${Date.now()}`;
+    const gatewayStatus = body.payment_status || body.status || '';
+    const mappedStatus = paymentService.mapGatewayStatus(gatewayStatus);
+
+    // Verify this is a subscription payment
+    if (body.custom_str2 !== 'subscription') {
+      return res.status(400).json({ success: false, message: 'Not a subscription payment' });
+    }
+
+    const userId = body.custom_str1;
+    const planKey = body.custom_str3;
+
+    if (!userId || !planKey) {
+      return res.status(400).json({ success: false, message: 'Missing user or plan info' });
+    }
+
+    // Verify signature using platform passphrase
+    const isValid = payfastService.verifyWebhook(body);
+    if (!isValid) {
+      return res.status(401).json({ success: false, message: 'Invalid signature' });
+    }
+
+    // Idempotency check
+    const existingTransaction = await TransactionLog.findOne({ transactionId: paymentTransactionId });
+    if (existingTransaction) {
+      return res.json({ success: true, duplicate: true });
+    }
+
+    try {
+      await paymentService.recordTransactionLog({
+        transactionId: paymentTransactionId,
+        sellerId: userId,
+        customerPhone: '',
+        productId: null,
+        orderId: null,
+        amount: Number(body.amount_gross || body.amount || 0),
+        status: mappedStatus,
+        rawPayload: body,
+        eventSource: 'payfast_subscription',
+      });
+    } catch (logError) {
+      if (logError?.code === 11000) {
+        return res.json({ success: true, duplicate: true });
+      }
+      throw logError;
+    }
+
+    if (mappedStatus === 'APPROVED') {
+      // Activate the subscription
+      const { changePlan } = await import('../services/subscription.service.js');
+      await changePlan(userId, planKey);
+
+      await auditService.logFinancialAction({
+        userId,
+        actionType: 'subscription_payment',
+        description: `Subscription payment confirmed for ${planKey} plan (${reference})`,
+        ipAddress: req.ip,
+      });
+
+      // Notify user via WhatsApp if they have a number
+      const user = await User.findById(userId);
+      if (user?.whatsappNumber) {
+        const { PLAN_CONFIG } = await import('../services/subscription.service.js');
+        const planName = PLAN_CONFIG[planKey]?.name || planKey;
+        await whatsappService.sendTextMessage(
+          user.whatsappNumber,
+          `✅ Your ${planName} plan subscription has been activated! Thank you for subscribing to Ubuntu Market.`
+        );
+      }
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Subscription webhook error:', error);
+    res.status(500).json({ success: false });
+  }
+}

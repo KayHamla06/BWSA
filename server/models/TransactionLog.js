@@ -17,7 +17,7 @@ const TransactionLogSchema = new Schema(
       index: true,
     },
     rawPayload: { type: Schema.Types.Mixed, default: null },
-    eventSource: { type: String, default: 'ozow' },
+    eventSource: { type: String, default: 'payfast' },
   },
   { timestamps: true }
 );

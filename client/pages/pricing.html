@@ -45,6 +45,14 @@
     .btn-white:hover { transform: translateY(-2px); }
     .btn-outline-white { border: 2px solid rgba(255,255,255,0.7); color: #fff; padding: 12px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 0.95rem; }
     .footer-simple { text-align: center; padding: 24px; color: var(--text-muted, #64748b); font-size: 0.85rem; }
+    .payment-toast { position: fixed; top: 20px; right: 20px; z-index: 10000; padding: 14px 24px; border-radius: 10px; color: #fff; font-size: 14px; box-shadow: 0 4px 16px rgba(0,0,0,0.15); transform: translateX(120%); transition: transform .3s ease; max-width: 400px; }
+    .payment-toast.show { transform: translateX(0); }
+    .payment-toast-success { background: #075E54; }
+    .payment-toast-error { background: #c0392b; }
+    .payment-toast-warning { background: #e67e22; }
+    .plan-cta-pay { border: none; cursor: pointer; font-size: 0.95rem; }
+    .plan-cta-pay:disabled { opacity: 0.6; cursor: not-allowed; }
+    .plan-cta-current { display: inline-block; }
     @media (max-width: 600px) { .pricing-page-nav .nav-links { gap: 6px; } .pricing-page-nav .nav-links a { font-size: 0.8rem; padding: 6px 10px; } }
   </style>
 </head>
@@ -123,11 +131,26 @@
   <script>
     (async () => {
       const grid = document.getElementById('plansGrid');
+      const token = localStorage.getItem('token');
+      const isLoggedIn = !!token;
+
       try {
         const res  = await fetch('/api/subscription/plans');
         const data = await res.json();
         const plans = data.plans || [];
         if (!plans.length) { grid.innerHTML = '<p style="text-align:center;color:#aaa;">No plans available.</p>'; return; }
+
+        // If logged in, get current plan
+        let currentPlan = null;
+        if (isLoggedIn) {
+          try {
+            const subRes = await fetch('/api/subscription', { headers: { 'Authorization': 'Bearer ' + token } });
+            if (subRes.ok) {
+              const subData = await subRes.json();
+              currentPlan = subData.plan?.planKey || subData.planKey || null;
+            }
+          } catch (e) { /* ignore */ }
+        }
 
         const ICONS  = { payg: '&#9889;', starter: '&#128640;', business: '&#128200;', pro: '&#9733;' };
         const COLORS = { payg: '#64748b', starter: '#3b82f6', business: '#128C7E', pro: '#7c3aed' };
@@ -140,7 +163,19 @@
           const trial   = plan.trialDays ? `<div class="plan-trial-note">&#10003; ${plan.trialDays}-day free trial</div>` : '';
           const cls     = plan.highlight ? 'plan-card highlighted' : 'plan-card';
           const features = (plan.features || []).map(f => `<li class="plan-feature-item">&#10003; ${f}</li>`).join('');
-          const href    = `/register?plan=${plan.planKey}`;
+
+          let ctaHtml;
+          if (isLoggedIn && currentPlan === plan.planKey) {
+            ctaHtml = `<span class="plan-cta-btn plan-cta-current" style="background:#e5e7eb;color:#6b7280;cursor:default;">Current Plan</span>`;
+          } else if (isLoggedIn && plan.price > 0) {
+            ctaHtml = `<button class="plan-cta-btn plan-cta-pay" style="background:${color};" data-plan="${plan.planKey}" data-action="pay">Pay Now – R${plan.price}/mo</button>`;
+          } else if (isLoggedIn && plan.price === 0) {
+            ctaHtml = `<button class="plan-cta-btn" style="background:${color};" data-plan="${plan.planKey}" data-action="free">Switch to Free</button>`;
+          } else {
+            const href = `/register?plan=${plan.planKey}`;
+            ctaHtml = `<a href="${href}" class="plan-cta-btn" style="background:${color};">${plan.price === 0 ? 'Get Started' : (plan.trialDays ? 'Start Free Trial' : 'Choose Plan')}</a>`;
+          }
+
           return `<div class="${cls}" style="--plan-color:${color}">
             ${badge}
             <div class="plan-icon" style="color:${color};font-size:2rem;">${icon}</div>
@@ -149,13 +184,105 @@
             <div class="plan-fee">Transaction fee: <strong>${plan.transactionFeePercent}%</strong></div>
             ${trial}
             <ul class="plan-features-list">${features}</ul>
-            <a href="${href}" class="plan-cta-btn" style="background:${color};">${plan.price === 0 ? 'Get Started' : (plan.trialDays ? 'Start Free Trial' : 'Choose Plan')}</a>
+            ${ctaHtml}
           </div>`;
         }).join('');
+
+        // Show nav links based on auth state
+        if (isLoggedIn) {
+          const navLinks = document.querySelector('.pricing-page-nav .nav-links');
+          if (navLinks) {
+            navLinks.innerHTML = `
+              <a href="/dashboard">Dashboard</a>
+              <a href="/settings">Settings</a>
+            `;
+          }
+        }
+
+        // Event delegation for plan buttons
+        grid.addEventListener('click', (e) => {
+          const btn = e.target.closest('[data-action]');
+          if (!btn) return;
+          if (btn.dataset.action === 'pay') payForPlan(btn.dataset.plan);
+          if (btn.dataset.action === 'free') switchToFreePlan();
+        });
+
+        // Check for subscription cancellation message
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('subscription') === 'cancelled') {
+          showPaymentToast('Payment was cancelled. You can try again when you\'re ready.', 'warning');
+        }
+
       } catch (e) {
         grid.innerHTML = '<p style="text-align:center;color:#e74c3c;">Could not load plans. Please refresh.</p>';
       }
     })();
+
+    async function payForPlan(planKey) {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '/login'; return; }
+
+      const btn = document.querySelector(`[data-plan="${planKey}"]`);
+      if (btn) { btn.textContent = 'Processing...'; btn.disabled = true; }
+
+      try {
+        const res = await fetch('/api/subscription/pay', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+          },
+          body: JSON.stringify({ planKey }),
+        });
+
+        const data = await res.json();
+        if (data.success && data.redirectUrl) {
+          window.location.href = data.redirectUrl;
+        } else {
+          showPaymentToast(data.message || 'Failed to create payment. Please try again.', 'error');
+          if (btn) { btn.textContent = 'Pay Now'; btn.disabled = false; }
+        }
+      } catch (err) {
+        showPaymentToast('Something went wrong. Please try again.', 'error');
+        if (btn) { btn.textContent = 'Pay Now'; btn.disabled = false; }
+      }
+    }
+
+    async function switchToFreePlan() {
+      const token = localStorage.getItem('token');
+      if (!token) { window.location.href = '/login'; return; }
+
+      try {
+        const res = await fetch('/api/subscription/change', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token,
+          },
+          body: JSON.stringify({ planKey: 'payg' }),
+        });
+        const data = await res.json();
+        if (data.success) {
+          showPaymentToast('Switched to Free plan.', 'success');
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          showPaymentToast(data.message || 'Failed to switch plan.', 'error');
+        }
+      } catch (err) {
+        showPaymentToast('Something went wrong.', 'error');
+      }
+    }
+
+    function showPaymentToast(message, type) {
+      const existing = document.querySelector('.payment-toast');
+      if (existing) existing.remove();
+      const toast = document.createElement('div');
+      toast.className = `payment-toast payment-toast-${type}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.classList.add('show'), 10);
+      setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
+    }
   </script>
 </body>
 </html>

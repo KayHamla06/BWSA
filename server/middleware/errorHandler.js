@@ -4,11 +4,14 @@ export function errorHandler(err, req, res, _next) {
 
   console.error(`[ERROR] ${req.method} ${req.path}:`, err.message);
 
-  res.status(statusCode).json({
+  const response = {
     success: false,
     message: statusCode === 500 ? 'Something went wrong. Please try again later.' : message,
-    ...(process.env.NODE_ENV !== 'production' && { stack: err.stack }),
-  });
+  };
+  if (process.env.NODE_ENV === 'development') {
+    response.stack = err.stack;
+  }
+  res.status(statusCode).json(response);
 }
 
 export class AppError extends Error {

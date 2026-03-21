@@ -35,8 +35,9 @@ import webhookRoutes from './routes/webhook.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import settingsRoutes from './routes/settings.routes.js';
 import subscriptionRoutes from './routes/subscription.routes.js';
+import adminRoutes from './routes/admin.routes.js';
 import { addClient } from './services/notification.service.js';
-import { verifyWhatsApp, handleWhatsApp, handlePayfastWebhook } from './controllers/webhook.controller.js';
+import { verifyWhatsApp, handleWhatsApp, handlePayfastWebhook, handleSubscriptionWebhook } from './controllers/webhook.controller.js';
 
 const clientDir = path.join(rootDir, 'client');
 
@@ -49,16 +50,35 @@ await connectDB();
 // ===== Global Middleware =====
 app.use(compression());
 
+// HTTPS redirect in production
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.header('x-forwarded-proto') !== 'https') {
+      return res.redirect(301, `https://${req.header('host')}${req.url}`);
+    }
+    next();
+  });
+}
+
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://unpkg.com"],
+      scriptSrc: ["'self'", "https://unpkg.com"],
       styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", "https://res.cloudinary.com", "data:"],
       connectSrc: ["'self'"],
+      frameAncestors: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'", "https://sandbox.payfast.co.za", "https://www.payfast.co.za"],
     },
   },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true,
+  },
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
 }));
 
 const allowedOrigins = [
@@ -93,6 +113,7 @@ app.use(csrfProtection);
 app.get('/webhook', verifyWhatsApp);
 app.post('/webhook', webhookLimiter, handleWhatsApp);
 app.post('/payment/webhook', webhookLimiter, handlePayfastWebhook);
+app.post('/payment/webhook/subscription', webhookLimiter, handleSubscriptionWebhook);
 
 // Apply API-wide rate limits before handlers.
 app.use('/api', apiLimiter);
@@ -115,6 +136,7 @@ app.use('/api/webhooks', webhookRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/admin', adminRoutes);
 
 // ===== SSE Notifications =====
 app.get('/api/notifications/stream', (req, res) => {
@@ -149,6 +171,14 @@ app.get('/api/health', (req, res) => {
 
 // ===== Serve HTML Pages =====
 const pages = ['login', 'register', 'verify', 'dashboard', 'products', 'orders', 'payments', 'customers', 'settings', 'pricing'];
+
+// Admin pages
+app.get('/admin/login', (req, res) => {
+  res.sendFile(path.join(clientDir, 'pages', 'admin-login.html'));
+});
+app.get('/admin/dashboard', (req, res) => {
+  res.sendFile(path.join(clientDir, 'pages', 'admin-dashboard.html'));
+});
 
 pages.forEach(page => {
   app.get(`/${page}`, (req, res) => {

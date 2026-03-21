@@ -16,6 +16,9 @@ export async function getSettings(req, res, next) {
     res.json({
       success: true,
       profile: user,
+      suspension: user.status === 'suspended'
+        ? { suspended: true, reason: user.suspensionReason || 'No reason provided' }
+        : { suspended: false },
       paymentSettings: sellerPayment
         ? {
             isConfigured: sellerPayment.isConfigured,

@@ -114,13 +114,67 @@ export function verifyWebhook(body) {
   const signature = String(body?.signature || '').trim().toLowerCase();
   if (!signature) return false;
 
+  const passphrase = process.env.PAYFAST_PASSPHRASE;
+  if (!passphrase) {
+    console.error('PAYFAST_PASSPHRASE not configured – cannot verify webhook');
+    return false;
+  }
+
   const payload = { ...body };
   delete payload.signature;
 
-  const platformExpected = buildSignature(payload, process.env.PAYFAST_PASSPHRASE || '');
+  const platformExpected = buildSignature(payload, passphrase);
   if (platformExpected === signature) return true;
 
   return false;
+}
+
+export function createSubscriptionPayment(user, planKey, planName, amount, reference) {
+  const config = getPlatformConfig();
+
+  if (!config.merchantId || !config.merchantKey) {
+    return { success: false, error: 'PayFast is not configured yet.' };
+  }
+
+  const parsedAmount = Number(amount);
+  if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    return { success: false, error: 'Invalid payment amount.' };
+  }
+
+  const returnUrl  = `${config.appUrl}/dashboard?subscription=success&plan=${encodeURIComponent(planKey)}`;
+  const cancelUrl  = `${config.appUrl}/pricing?subscription=cancelled`;
+  const notifyUrl  = `${config.appUrl}/payment/webhook/subscription`;
+
+  const data = {
+    merchant_id:    config.merchantId,
+    merchant_key:   config.merchantKey,
+    return_url:     returnUrl,
+    cancel_url:     cancelUrl,
+    notify_url:     notifyUrl,
+    name_first:     user.name || 'Customer',
+    email_address:  user.email || 'payments@ubuntu.market',
+    m_payment_id:   reference,
+    amount:         parsedAmount.toFixed(2),
+    item_name:      `Ubuntu Market ${planName} Plan – Monthly Subscription`,
+    item_description: `Monthly subscription to ${planName} plan`,
+    custom_str1:    user._id.toString(),
+    custom_str2:    'subscription',
+    custom_str3:    planKey,
+    custom_str4:    '',
+  };
+
+  const signature = buildSignature(data, config.passphrase);
+  const params = new URLSearchParams({ ...data, signature });
+
+  return {
+    success: true,
+    data: {
+      redirectUrl: `${config.baseUrl}?${params.toString()}`,
+      reference,
+      provider: 'payfast',
+      planKey,
+    },
+  };
 }
 
 export const payfastService = {
@@ -128,5 +182,6 @@ export const payfastService = {
   getPlatformConfig,
   getSellerConfig,
   createPaymentRequest,
+  createSubscriptionPayment,
   verifyWebhook,
 };

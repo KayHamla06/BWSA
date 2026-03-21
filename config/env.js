@@ -1,4 +1,4 @@
-const required = ['MONGODB_URI', 'JWT_SECRET', 'REFRESH_TOKEN_SECRET'];
+const required = ['MONGODB_URI', 'JWT_SECRET', 'REFRESH_TOKEN_SECRET', 'PAYFAST_PASSPHRASE'];
 
 export function validateEnv() {
   const missing = required.filter((key) => !process.env[key]);

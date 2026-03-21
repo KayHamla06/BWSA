@@ -21,8 +21,10 @@ function showToast(message, type = 'info', duration = 4000) {
   toast.innerHTML = `
     <span class="toast-icon">${icons[type] || icons.info}</span>
     <span class="toast-message">${message}</span>
-    <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    <button class="toast-close">&times;</button>
   `;
+
+  toast.querySelector('.toast-close').addEventListener('click', () => toast.remove());
 
   container.appendChild(toast);
 

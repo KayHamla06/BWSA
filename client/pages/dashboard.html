@@ -14,10 +14,10 @@
 <body>
   <div class="app-layout">
     <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
       <div class="sidebar-header">
         <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
-        <button class="sidebar-close" id="sidebarClose">&times;</button>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&times;</button>
       </div>
       <nav class="sidebar-nav">
         <a href="/dashboard" class="nav-item active" data-page="dashboard">
@@ -26,7 +26,7 @@
         <a href="/products" class="nav-item" data-page="products">
           <span class="nav-icon"><i data-lucide="package"></i></span> Products
         </a>
-        <a href="/orders" class="nav-item" data-page="orders">
+        <a href="/orders" class="nav-item" data-page="orders" data-feature="order_tracking">
           <span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders
         </a>
         <a href="/payments" class="nav-item" data-page="payments">
@@ -41,13 +41,17 @@
       </nav>
       <div class="sidebar-footer">
         <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+        <div class="powered-by-bubble">
+          <span>Powered by Bubble</span>
+          <img src="/assets/Bubble_Logo.png" alt="Bubble" class="bubble-logo">
+        </div>
       </div>
     </aside>
 
     <!-- Main Content -->
     <main class="main-content">
       <header class="topbar">
-        <button class="hamburger" id="hamburgerBtn"><i data-lucide="menu"></i></button>
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
         <h1 class="page-title">Dashboard</h1>
         <div class="topbar-user" id="topbarUser"></div>
       </header>
@@ -148,7 +152,7 @@
           <p class="card-subtitle" id="paymentFlowMessage">Ubuntu Pay is active. Incoming customer payments settle to your platform balance first.</p>
         </div>
 
-        <div class="chart-grid">
+        <div class="chart-grid" data-feature="analytics_dashboard">
           <div class="card">
             <h2 class="card-title">Daily Revenue</h2>
             <div id="dailyRevenueChart" class="mini-chart"></div>

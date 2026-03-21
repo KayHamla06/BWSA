@@ -13,12 +13,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('createPaymentBtn').addEventListener('click', () => {
     modal.hidden = false;
-    modal.style.display = 'flex';
   });
-  document.getElementById('requestWithdrawalBtn').addEventListener('click', () => {
+
+  function openWithdrawalModal() {
     withdrawalModal.hidden = false;
-    withdrawalModal.style.display = 'flex';
-  });
+  }
+
+  document.getElementById('withdrawBtn').addEventListener('click', openWithdrawalModal);
+  document.getElementById('requestWithdrawalBtn').addEventListener('click', openWithdrawalModal);
 
   document.getElementById('modalClose').addEventListener('click', closeModal);
   document.getElementById('cancelPayBtn').addEventListener('click', closeModal);
@@ -174,13 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function closeModal() {
     modal.hidden = true;
-    modal.style.display = '';
     paymentForm.reset();
   }
 
   function closeWithdrawalModal() {
     withdrawalModal.hidden = true;
-    withdrawalModal.style.display = '';
     withdrawalForm.reset();
     toggleWithdrawalMethod();
   }

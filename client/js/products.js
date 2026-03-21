@@ -9,6 +9,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   loadProducts();
 
+  // Event delegation for product action buttons
+  productGrid.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action]');
+    if (!btn) return;
+    const id = btn.dataset.id;
+    if (btn.dataset.action === 'edit') window.editProduct(id);
+    else if (btn.dataset.action === 'delete') window.deleteProduct(id);
+  });
+
   // Open add modal
   document.getElementById('addProductBtn').addEventListener('click', () => {
     resetForm();
@@ -90,8 +99,8 @@ document.addEventListener('DOMContentLoaded', () => {
               <span class="product-stock ${(p.stock || 0) === 0 ? 'out' : (p.stock || 0) < 5 ? 'low' : ''}">${(p.stock || 0) === 0 ? 'Out of Stock' : `${p.stock || 0} in stock`}</span>
             </div>
             <div class="product-actions">
-              <button class="btn btn-outline btn-sm" onclick="editProduct('${p._id}')">Edit</button>
-              <button class="btn btn-danger btn-sm" onclick="deleteProduct('${p._id}')">Delete</button>
+              <button class="btn btn-outline btn-sm" data-action="edit" data-id="${p._id}">Edit</button>
+              <button class="btn btn-danger btn-sm" data-action="delete" data-id="${p._id}">Delete</button>
             </div>
           </div>
         </div>
