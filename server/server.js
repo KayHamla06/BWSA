@@ -83,6 +83,8 @@ app.use(helmet({
 
 const allowedOrigins = [
   process.env.APP_URL,
+  'https://ubuntumarket.online',
+  'https://www.ubuntumarket.online',
   'https://ubuntu-market.onrender.com',
   'http://localhost:3000',
 ].filter(Boolean);
