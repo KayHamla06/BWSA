@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+  <div class="app-layout admin-layout">
+    <!-- Admin Sidebar -->
+    <aside class="sidebar admin-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <img src="/assets/logo.png" alt="Ubuntu Market" class="sidebar-logo">
+        <span class="admin-label">ADMIN</span>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#overview" class="nav-item active" data-section="overview">
+          <span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Overview
+        </a>
+        <a href="#users" class="nav-item" data-section="users">
+          <span class="nav-icon"><i data-lucide="store"></i></span> Sellers / Users
+        </a>
+        <a href="#customers" class="nav-item" data-section="customers">
+          <span class="nav-icon"><i data-lucide="users"></i></span> All Customers
+        </a>
+        <a href="#orders" class="nav-item" data-section="orders">
+          <span class="nav-icon"><i data-lucide="shopping-cart"></i></span> All Orders
+        </a>
+        <a href="#payments" class="nav-item" data-section="payments">
+          <span class="nav-icon"><i data-lucide="credit-card"></i></span> All Payments
+        </a>
+        <a href="#activity" class="nav-item" data-section="activity">
+          <span class="nav-icon"><i data-lucide="activity"></i></span> Activity Feed
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="admin-profile-mini" id="adminProfile"></div>
+        <button class="btn btn-outline btn-full" id="adminLogoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <header class="topbar admin-topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Admin Dashboard</h1>
+        <div class="topbar-user" id="topbarAdmin"></div>
+      </header>
+
+      <div class="content-area">
+
+        <!-- ═══════════ OVERVIEW SECTION ═══════════ -->
+        <section id="section-overview" class="admin-section active">
+          <div class="stats-grid admin-stats-grid">
+            <div class="stat-card stat-primary">
+              <div class="stat-icon"><i data-lucide="store"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Total Sellers</span>
+                <span class="stat-value" id="statTotalUsers">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-success">
+              <div class="stat-icon"><i data-lucide="user-check"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Active Sellers</span>
+                <span class="stat-value" id="statActiveUsers">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-warning">
+              <div class="stat-icon"><i data-lucide="user-x"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Suspended</span>
+                <span class="stat-value" id="statSuspendedUsers">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-info">
+              <div class="stat-icon"><i data-lucide="users"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Total Customers</span>
+                <span class="stat-value" id="statTotalCustomers">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-accent">
+              <div class="stat-icon"><i data-lucide="dollar-sign"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Total Revenue</span>
+                <span class="stat-value" id="statTotalRevenue">R0.00</span>
+              </div>
+            </div>
+            <div class="stat-card stat-success">
+              <div class="stat-icon"><i data-lucide="trending-up"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Revenue Today</span>
+                <span class="stat-value" id="statRevenueToday">R0.00</span>
+              </div>
+            </div>
+            <div class="stat-card stat-primary">
+              <div class="stat-icon"><i data-lucide="calendar"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Revenue This Month</span>
+                <span class="stat-value" id="statRevenueMonth">R0.00</span>
+              </div>
+            </div>
+            <div class="stat-card stat-info">
+              <div class="stat-icon"><i data-lucide="shopping-cart"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Total Orders</span>
+                <span class="stat-value" id="statTotalOrders">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-success">
+              <div class="stat-icon"><i data-lucide="shopping-bag"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Orders Today</span>
+                <span class="stat-value" id="statOrdersToday">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-accent">
+              <div class="stat-icon"><i data-lucide="badge-check"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Completed Payments</span>
+                <span class="stat-value" id="statCompletedPayments">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-warning">
+              <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Failed Payments</span>
+                <span class="stat-value" id="statFailedPayments">0</span>
+              </div>
+            </div>
+            <div class="stat-card stat-danger">
+              <div class="stat-icon"><i data-lucide="landmark"></i></div>
+              <div class="stat-info">
+                <span class="stat-label">Pending Withdrawals</span>
+                <span class="stat-value" id="statPendingWithdrawals">0</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Activity -->
+          <div class="card admin-card">
+            <h2 class="card-title">Recent Platform Activity</h2>
+            <div class="activity-feed" id="activityFeed">
+              <p class="text-muted">Loading activity...</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════ USERS / SELLERS SECTION ═══════════ -->
+        <section id="section-users" class="admin-section">
+          <div class="section-header">
+            <h2>Sellers / Users</h2>
+            <div class="section-filters">
+              <input type="text" id="userSearch" class="form-input" placeholder="Search by name, email, business...">
+              <select id="userStatusFilter" class="form-input" aria-label="Filter users by status">
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="suspended">Suspended</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div class="card admin-card">
+            <div class="table-container">
+              <table class="data-table" id="usersTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Business</th>
+                    <th>Email</th>
+                    <th>Plan</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="usersBody">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="usersPagination"></div>
+          </div>
+        </section>
+
+        <!-- ═══════════ USER DETAIL MODAL ═══════════ -->
+        <div class="modal-overlay" id="userDetailModal">
+          <div class="modal admin-detail-modal">
+            <div class="modal-header">
+              <h2 id="userDetailTitle">User Details</h2>
+              <button class="modal-close" id="closeUserDetail">&times;</button>
+            </div>
+            <div class="modal-body" id="userDetailBody">
+              <p>Loading...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ CUSTOMERS SECTION ═══════════ -->
+        <section id="section-customers" class="admin-section">
+          <div class="section-header">
+            <h2>All Customers</h2>
+            <div class="section-filters">
+              <input type="text" id="customerSearch" class="form-input" placeholder="Search by name, email, phone...">
+            </div>
+          </div>
+          <div class="card admin-card">
+            <div class="table-container">
+              <table class="data-table" id="customersTable">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>WhatsApp</th>
+                    <th>Email</th>
+                    <th>Seller</th>
+                    <th>Orders</th>
+                    <th>Total Spent</th>
+                    <th>Last Order</th>
+                  </tr>
+                </thead>
+                <tbody id="customersBody">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="customersPagination"></div>
+          </div>
+        </section>
+
+        <!-- ═══════════ CUSTOMER DETAIL MODAL ═══════════ -->
+        <div class="modal-overlay" id="customerDetailModal">
+          <div class="modal admin-detail-modal">
+            <div class="modal-header">
+              <h2 id="customerDetailTitle">Customer Details</h2>
+              <button class="modal-close" id="closeCustomerDetail">&times;</button>
+            </div>
+            <div class="modal-body" id="customerDetailBody">
+              <p>Loading...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════ ORDERS SECTION ═══════════ -->
+        <section id="section-orders" class="admin-section">
+          <div class="section-header">
+            <h2>All Orders</h2>
+            <div class="section-filters">
+              <select id="orderStatusFilter" class="form-input" aria-label="Filter orders by status">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="paid">Paid</option>
+                <option value="delivered">Delivered</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </div>
+          </div>
+          <div class="card admin-card">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Seller</th>
+                    <th>Customer</th>
+                    <th>Product</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="ordersBody">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="ordersPagination"></div>
+          </div>
+        </section>
+
+        <!-- ═══════════ PAYMENTS SECTION ═══════════ -->
+        <section id="section-payments" class="admin-section">
+          <div class="section-header">
+            <h2>All Payments</h2>
+            <div class="section-filters">
+              <select id="paymentStatusFilter" class="form-input" aria-label="Filter payments by status">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+                <option value="refunded">Refunded</option>
+              </select>
+            </div>
+          </div>
+          <div class="card admin-card">
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Transaction ID</th>
+                    <th>Seller</th>
+                    <th>Amount</th>
+                    <th>Method</th>
+                    <th>Flow</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="paymentsBody">
+                  <tr><td colspan="7" class="text-center">Loading...</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="paymentsPagination"></div>
+          </div>
+        </section>
+
+        <!-- ═══════════ ACTIVITY SECTION ═══════════ -->
+        <section id="section-activity" class="admin-section">
+          <div class="card admin-card">
+            <h2 class="card-title">Live Platform Activity</h2>
+            <div class="activity-feed activity-feed-full" id="activityFeedFull">
+              <p class="text-muted">Loading activity...</p>
+            </div>
+          </div>
+        </section>
+
+      </div><!-- /content-area -->
+    </main>
+  </div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

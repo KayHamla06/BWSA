@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customers - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="/products" class="nav-item"><span class="nav-icon"><i data-lucide="package"></i></span> Products</a>
+        <a href="/orders" class="nav-item" data-feature="order_tracking"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
+        <a href="/payments" class="nav-item"><span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments</a>
+        <a href="/customers" class="nav-item active"><span class="nav-icon"><i data-lucide="users"></i></span> Customers</a>
+        <a href="/settings" class="nav-item"><span class="nav-icon"><i data-lucide="settings"></i></span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+        <div class="powered-by-bubble">
+          <span>Powered by Bubble</span>
+          <img src="/assets/Bubble_Logo.png" alt="Bubble" class="bubble-logo">
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Customers</h1>
+      </header>
+
+      <div class="content-area">
+        <div class="card">
+          <h2 class="card-title">Promotions</h2>
+          <p class="card-subtitle">Send WhatsApp template broadcasts to your customer segments.</p>
+          <form id="campaignForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="customerSearch">Search Customers</label>
+                <input type="text" id="customerSearch" placeholder="Search by name or number">
+              </div>
+              <div class="form-group">
+                <label for="customerSegment">Customer Segment</label>
+                <select id="customerSegment" class="select-input">
+                  <option value="all">All customers</option>
+                  <option value="repeat">Repeat buyers</option>
+                  <option value="inactive">Inactive 30+ days</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="templateName">WhatsApp Template Name</label>
+                <input type="text" id="templateName" placeholder="promo_template">
+              </div>
+              <div class="form-group">
+                <label for="templateLanguage">Template Language</label>
+                <input type="text" id="templateLanguage" value="en" placeholder="en">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="campaignMessage">Promotion Message</label>
+              <textarea id="campaignMessage" rows="3" placeholder="Discounts, new arrivals, flash sale..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Queue Campaign</button>
+          </form>
+          <div id="campaignHistory" class="stack-list"></div>
+        </div>
+
+        <div class="card">
+          <div class="table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>WhatsApp</th>
+                  <th>Orders</th>
+                  <th>Total Spent</th>
+                  <th>Last Order</th>
+                  <th>Last Contact</th>
+                </tr>
+              </thead>
+              <tbody id="customersBody">
+                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/customers.js"></script>
+</body>
+</html>

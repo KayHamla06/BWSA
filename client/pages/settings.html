@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/dashboard.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="sidebar-logo">
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&times;</button>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item"><span class="nav-icon"><i data-lucide="layout-dashboard"></i></span> Dashboard</a>
+        <a href="/products" class="nav-item"><span class="nav-icon"><i data-lucide="package"></i></span> Products</a>
+        <a href="/orders" class="nav-item" data-feature="order_tracking"><span class="nav-icon"><i data-lucide="shopping-cart"></i></span> Orders</a>
+        <a href="/payments" class="nav-item"><span class="nav-icon"><i data-lucide="credit-card"></i></span> Payments</a>
+        <a href="/customers" class="nav-item"><span class="nav-icon"><i data-lucide="users"></i></span> Customers</a>
+        <a href="/settings" class="nav-item active"><span class="nav-icon"><i data-lucide="settings"></i></span> Settings</a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn btn-outline btn-full" id="logoutBtn">Logout</button>
+        <div class="powered-by-bubble">
+          <span>Powered by Bubble</span>
+          <img src="/assets/Bubble_Logo.png" alt="Bubble" class="bubble-logo">
+        </div>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu"><i data-lucide="menu"></i></button>
+        <h1 class="page-title">Settings</h1>
+      </header>
+
+      <div class="content-area">
+        <div class="card">
+          <h2 class="card-title">Business Profile</h2>
+          <form id="profileForm">
+            <div class="form-group">
+              <label for="businessLogo">Business Logo</label>
+              <input type="file" id="businessLogo" name="logo" accept="image/png,image/jpeg">
+              <div id="businessLogoPreview" class="image-preview"></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="businessName">Business Name</label>
+                <input type="text" id="businessName" name="businessName">
+              </div>
+              <div class="form-group">
+                <label for="whatsappNumber">WhatsApp Number</label>
+                <input type="tel" id="whatsappNumber" name="whatsappNumber">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="businessDescription">Business Description</label>
+              <textarea id="businessDescription" name="businessDescription" rows="3"></textarea>
+            </div>
+            <div class="form-group">
+              <label for="supportEmail">Support Email</label>
+              <input type="email" id="supportEmail" name="supportEmail">
+            </div>
+            <button type="submit" class="btn btn-primary">Save Profile</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title"><i data-lucide="credit-card"></i> Payment Routing</h2>
+          <p class="card-subtitle">Choose between direct PayFast settlement or Ubuntu Pay, where payments settle to the platform and you withdraw later.</p>
+          <div class="info-banner" id="paymentFlowHint">Ubuntu Pay is active. Customer funds will settle into your Ubuntu Pay balance.</div>
+          <div class="wallet-balance-strip" id="settingsWalletSummary">
+            <div>
+              <span class="wallet-balance-label">Available Balance</span>
+              <strong id="settingsAvailableBalance">R0.00</strong>
+            </div>
+            <div>
+              <span class="wallet-balance-label">Pending Balance</span>
+              <strong id="settingsPendingBalance">R0.00</strong>
+            </div>
+          </div>
+          <form id="paymentSettingsForm">
+            <div class="form-group">
+              <label for="paymentFlow">How should customer money flow?</label>
+              <select id="paymentFlow" name="paymentFlow" class="select-input">
+                <option value="ubuntu_pay">Ubuntu Pay account on this platform</option>
+                <option value="payfast_direct">Direct to my PayFast account</option>
+              </select>
+            </div>
+
+            <div id="payfastDirectFields" hidden>
+              <h3 class="form-section-title">Direct PayFast Account</h3>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="payfastMerchantId">PayFast Merchant ID</label>
+                  <input type="text" id="payfastMerchantId" name="payfastMerchantId">
+                </div>
+                <div class="form-group">
+                  <label for="payfastMerchantKey">PayFast Merchant Key</label>
+                  <input type="password" id="payfastMerchantKey" name="payfastMerchantKey" placeholder="Leave blank to keep current key">
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="payfastPassphrase">PayFast Passphrase</label>
+                  <input type="password" id="payfastPassphrase" name="payfastPassphrase" placeholder="Optional if your account uses one">
+                </div>
+                <div class="form-group">
+                  <label for="payfastReturnUrl">Return URL</label>
+                  <input type="url" id="payfastReturnUrl" name="payfastReturnUrl" placeholder="https://your-domain.com/payments">
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="payfastCancelUrl">Cancel URL</label>
+                <input type="url" id="payfastCancelUrl" name="payfastCancelUrl" placeholder="https://your-domain.com/payments">
+              </div>
+            </div>
+
+            <h3 class="form-section-title">Ubuntu Pay Withdrawal Details</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="bankName">Bank Name</label>
+                <input type="text" id="bankName" name="bankName">
+              </div>
+              <div class="form-group">
+                <label for="accountHolder">Account Holder</label>
+                <input type="text" id="accountHolder" name="accountHolder">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="accountNumber">Account Number</label>
+                <input type="text" id="accountNumber" name="accountNumber">
+              </div>
+              <div class="form-group">
+                <label for="accountType">Account Type</label>
+                <select id="accountType" name="accountType" class="select-input">
+                  <option value="">Select...</option>
+                  <option value="cheque">Cheque</option>
+                  <option value="savings">Savings</option>
+                  <option value="business">Business</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="payshapId">PayShap ID or Number</label>
+                <input type="text" id="payshapId" name="payshapId">
+              </div>
+              <div class="form-group">
+                <label for="capitecNumber">Capitec Number</label>
+                <input type="text" id="capitecNumber" name="capitecNumber">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="capitecSurname">Capitec Surname</label>
+                <input type="text" id="capitecSurname" name="capitecSurname">
+              </div>
+              <div class="form-group">
+                <label for="qrPaymentDetails">QR Payment Details</label>
+                <textarea id="qrPaymentDetails" name="qrPaymentDetails" rows="2" placeholder="Paste your QR payment reference or instructions"></textarea>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary">Save Payment Settings</button>
+            <div id="paymentStatus" class="status-badge" hidden></div>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Coupons</h2>
+          <p class="card-subtitle">Create discount codes that are validated during payment.</p>
+          <form id="couponForm">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="couponCode">Coupon Code</label>
+                <input type="text" id="couponCode" name="couponCode" placeholder="SAVE10">
+              </div>
+              <div class="form-group">
+                <label for="discountPercentage">Discount Percentage</label>
+                <input type="number" id="discountPercentage" name="discountPercentage" min="1" max="100">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="expirationDate">Expiration Date</label>
+              <input type="date" id="expirationDate" name="expirationDate">
+            </div>
+            <button type="submit" class="btn btn-primary">Create Coupon</button>
+          </form>
+          <div id="couponList" class="stack-list"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/settings.js"></script>
+</body>
+</html>

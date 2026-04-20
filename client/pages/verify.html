@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Account - Ubuntu Market</title>
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+  <style>
+    /* Inline error banner with slide-in animation */
+    .verify-error {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      border-radius: var(--radius, 8px);
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.4;
+      border-left: 4px solid var(--danger, #dc2626);
+      background: var(--danger-light, #fee2e2);
+      color: #991b1b;
+      opacity: 0;
+      transform: translateY(-8px) scale(0.97);
+      transition: none;
+    }
+    .verify-error.show {
+      display: flex;
+      animation: errorSlideIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+    .verify-error.hide {
+      animation: errorSlideOut 0.25s ease forwards;
+    }
+    .verify-error .error-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .verify-success {
+      border-left-color: var(--success, #25D366);
+      background: var(--success-light, #dcfce7);
+      color: #166534;
+    }
+    @keyframes errorSlideIn {
+      0%   { opacity: 0; transform: translateY(-8px) scale(0.97); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes errorSlideOut {
+      0%   { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+    }
+    @keyframes shakeX {
+      0%, 100% { transform: translateX(0); }
+      20%      { transform: translateX(-6px); }
+      40%      { transform: translateX(6px); }
+      60%      { transform: translateX(-4px); }
+      80%      { transform: translateX(4px); }
+    }
+    .shake {
+      animation: shakeX 0.45s ease;
+    }
+    .pin-input-error {
+      border-color: var(--danger, #dc2626) !important;
+      box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.15);
+    }
+  </style>
+</head>
+<body class="auth-page">
+  <div class="auth-container">
+    <div class="auth-card pop-in">
+      <div class="auth-logo">
+        <img src="/assets/logo.png" alt="Ubuntu market logo" class="auth-logo-img">
+        <p>Verify your WhatsApp number</p>
+      </div>
+
+      <div class="verify-info">
+        <p>We sent a 6-digit verification code to your WhatsApp. Enter it below to activate your account.</p>
+      </div>
+
+      <!-- Animated inline error/success banner -->
+      <div id="verifyMsg" class="verify-error">
+        <span class="error-icon"></span>
+        <span class="error-text"></span>
+      </div>
+
+      <form id="verifyForm" method="POST" class="auth-form">
+        <div class="form-group">
+          <label for="pin">Verification PIN</label>
+          <input type="text" id="pin" name="pin" placeholder="Enter 6-digit PIN" required
+                 maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code">
+        </div>
+        <button type="submit" class="btn btn-primary btn-full" id="verifyBtn">Verify Account</button>
+      </form>
+
+      <div class="verify-footer">
+        <p>Didn't receive the code?</p>
+        <button class="btn btn-outline btn-full" id="resendBtn">Resend PIN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/toast.js"></script>
+  <script src="/js/verify.js"></script>
+</body>
+</html>

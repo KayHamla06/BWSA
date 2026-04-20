@@ -1,0 +1,16 @@
+/* ===== ORDERS PAGE ===== */
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.order-status .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.order-status.paid .dot { background: var(--success); }
+.order-status.pending .dot { background: var(--warning); }
+.order-status.failed .dot { background: var(--danger); }
